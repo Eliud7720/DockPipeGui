@@ -11,6 +11,10 @@ from PySide6.QtCore import Qt
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.cs_1 = False
+        self.cs_2 = False
+        self.cs_3 = False
+        self.cs_4 = False
 
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
@@ -44,10 +48,10 @@ class MainWindow(QMainWindow):
         self.up_layout.setSpacing(30)
 
         # Create the PushButtons
-        self.button1 = CustomButton("Lig. Prep  ")
+        self.button1 = CustomTriangleButton("Lig. Prep  ")
         self.button2 = CustomTriangleButton("Rec. Prep  ")
         self.button3 = CustomTriangleButton("Docking  ")
-        self.button4 = CustomButton("Analysis  ")
+        self.button4 = CustomTriangleButton("Analysis  ")
 
         # Add buttons to the layout
         self.up_layout.addWidget(self.button1)
@@ -139,7 +143,7 @@ class MainWindow(QMainWindow):
 
         # ------------------------- ESTABLISH THE CONNECTIONS -------------------------"
 
-
+        self.simulated_click = False
         self.button1.clicked.connect(self.signal_1)
         self.button2.clicked.connect(self.signal_2)
         self.button3.clicked.connect(self.signal_3)
@@ -148,17 +152,97 @@ class MainWindow(QMainWindow):
         # ------------------------- ESTABLISH THE RECEPTORS -------------------------"
 
     def signal_1(self):
-        self.main_stack.setCurrentIndex(0)
+        
+        # Check simulated clicks
 
+        if self.button2.isChecked() and (self.cs_1 == False):
+            self.cs_2 = True
+            self.button2.click()
+
+        if self.button3.isChecked() and (self.cs_1 == False):
+            self.cs_3 = True
+            self.button3.click()
+
+        if self.button4.isChecked() and (self.cs_1 == False):
+            self.cs_4 = True
+            self.button4.click()
+        
+        # Return to false the simulated clicks
+        self.cs_2 = False
+        self.cs_3 = False
+        self.cs_4 = False
+
+        self.main_stack.setCurrentIndex(0)
+    
     def signal_2(self):
-        self.main_stack.setCurrentIndex(1)       
+        
+        # Check simulated clicks
+
+        if self.button1.isChecked() and (self.cs_2 == False):
+            self.cs_1 = True
+            self.button1.click()
+
+        if self.button3.isChecked() and (self.cs_2 == False):
+            self.cs_3 = True
+            self.button3.click()
+
+        if self.button4.isChecked() and (self.cs_2 == False):
+            self.cs_4 = True
+            self.button4.click()
+        
+        # Return to false the simulated clicks
+        self.cs_1 = False
+        self.cs_3 = False
+        self.cs_4 = False
+
+        self.main_stack.setCurrentIndex(1)
+
 
     def signal_3(self):
+
+        if self.button1.isChecked() and (self.cs_3 == False):
+            self.cs_1 = True
+            self.button1.click()
+
+        if self.button2.isChecked() and (self.cs_3 == False):
+            self.cs_2 = True
+            self.button2.click()
+
+        if self.button4.isChecked() and (self.cs_3 == False):
+            self.cs_4 = True
+            self.button4.click()
+        
+        # Return to false the simulated clicks
+        self.cs_1 = False
+        self.cs_2 = False
+        self.cs_4 = False
+
         self.main_stack.setCurrentIndex(2)
-            
+
+
 
     def signal_4(self):
+        
+        if self.button1.isChecked() and (self.cs_4 == False):
+            self.cs_1 = True
+            self.button1.click()
+
+        if self.button2.isChecked() and (self.cs_4 == False):
+            self.cs_2 = True
+            self.button2.click()
+
+        if self.button3.isChecked() and (self.cs_4 == False):
+            self.cs_3 = True
+            self.button3.click()
+        
+        # Return to false the simulated clicks
+        self.cs_1 = False
+        self.cs_2 = False
+        self.cs_3 = False
+
         self.main_stack.setCurrentIndex(3)
+    
+
 
         # ------------------------- ESTABLISH THE PAGES FUNCTIONS -------------------------"
 
