@@ -33,28 +33,28 @@ class CustomTriangleButton(QPushButton):
 
         self.setStyleSheet("""
             QPushButton {
-                color: white;
+                color: #4c4c4c;
                 padding-top: 12px;
                 padding-bottom: 12px;
                 font-family: 'Aptos';
                 font-size: 35px; 
-                background-color: #00C0EC;
+                background-color: white;
                 border-radius: 13px;
             }
                            
             QPushButton:hover {
-                color: white;
-                background-color: #00B0D8; 
+                color: #4c4c4c;
+                background-color: #c7c7c7; 
             }
                            
             QPushButton:pressed {
-                color: white;
-                background-color: #0085A5;
+                color: #4c4c4c;
+                background-color: #a1a1a1;
             }
             
             QPushButton:checked {
-                color: white;
-                background-color: #0085A5;
+                color: #4c4c4c;
+                background-color: #a1a1a1;
             }
         """)
 
@@ -77,7 +77,7 @@ class CustomTriangleButton(QPushButton):
         ]
         triangle = QPolygon(points)
 
-        brush = QBrush(QColor(255, 255, 255))
+        brush = QBrush(QColor("#4c4c4c"))
         painter.setBrush(brush)
         painter.setPen(Qt.NoPen)
 
@@ -101,8 +101,7 @@ class CustomTriangleButton(QPushButton):
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
-        # No necesitas lógica adicional aquí ya que el clic simulado también desencadena la señal clicked.
+        
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
-        # No necesitas lógica adicional aquí.

@@ -1,6 +1,9 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QLabel, QHBoxLayout, QStackedWidget, QPushButton
-from graphic_elements.up_buttons import CustomButton
+from graphic_elements.desplegable_menu_1 import DropdownWindow1
+from graphic_elements.desplegable_menu_2 import DropdownWindow2
+from graphic_elements.desplegable_menu_3 import DropdownWindow3
+from graphic_elements.desplegable_menu_4 import DropdownWindow4
 from graphic_elements.label_text import CustomLabel
 from graphic_elements.py_toggle import CustomCheckBox
 from graphic_elements.up_button_triangle import CustomTriangleButton
@@ -11,15 +14,26 @@ from PySide6.QtCore import Qt
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        # ------------------------- ESTABLISH THE MAIN ATTRIBUTES -------------------------"
+
+        # Simulated clicks between buttons
         self.cs_1 = False
         self.cs_2 = False
         self.cs_3 = False
         self.cs_4 = False
 
+        # Simulated clicks between windows
+        self.ws_1 = False
+        self.ws_2 = False
+        self.ws_3 = False
+        self.ws_4 = False
+
+
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.0") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.1") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -128,6 +142,7 @@ class MainWindow(QMainWindow):
                 border-left: none;
                 border-right: none;
                 border-bottom: 2.5px solid #6d6d6d;
+                background-color: #4c4c4c;
             }
         """)
 
@@ -136,18 +151,81 @@ class MainWindow(QMainWindow):
                 background-color: white;
             }
         """)
-
+        
 
         # ------------------------- ESTABLISH THE MAIN WIDGET -------------------------"
         self.setCentralWidget(self.main_frame)
+        self.dropdown_1 = DropdownWindow1(self)
+        self.dropdown_2 = DropdownWindow2(self)
+        self.dropdown_3 = DropdownWindow3(self)
+        self.dropdown_4 = DropdownWindow4(self)
 
         # ------------------------- ESTABLISH THE CONNECTIONS -------------------------"
-
-        self.simulated_click = False
+        
         self.button1.clicked.connect(self.signal_1)
+        self.button1.clicked.connect(self.show_dropdown_1)
+
         self.button2.clicked.connect(self.signal_2)
+        self.button2.clicked.connect(self.show_dropdown_2)
+
         self.button3.clicked.connect(self.signal_3)
+        self.button3.clicked.connect(self.show_dropdown_3)
+
         self.button4.clicked.connect(self.signal_4)
+        self.button4.clicked.connect(self.show_dropdown_4)
+
+
+        # ------------------------- DROPSHOW FUNCTIONS -------------------------"
+
+
+    def show_dropdown_1(self):
+        if not self.ws_1:
+            button_rect = self.button1.rect()
+            button_pos = self.button1.mapToGlobal(button_rect.bottomLeft())
+            self.dropdown_1.move(button_pos)
+            self.dropdown_1.show()
+    
+    
+    def show_dropdown_2(self):
+        if not self.ws_2:
+            button_rect = self.button2.rect()
+            button_pos = self.button2.mapToGlobal(button_rect.bottomLeft())
+            self.dropdown_2.move(button_pos)
+            self.dropdown_2.show()
+
+    def show_dropdown_3(self):
+        if not self.ws_3:
+            button_rect = self.button3.rect()
+            button_pos = self.button3.mapToGlobal(button_rect.bottomLeft())
+            self.dropdown_3.move(button_pos)
+            self.dropdown_3.show()
+    
+    def show_dropdown_4(self):
+        if not self.ws_4:
+            button_rect = self.button4.rect()
+            button_pos = self.button4.mapToGlobal(button_rect.bottomLeft())
+            self.dropdown_4.move(button_pos)
+            self.dropdown_4.show()
+    
+    def simulate_button_click_1(self):
+        self.ws_1 = True
+        self.button1.click()
+        self.ws_1 = False
+    
+    def simulate_button_click_2(self):
+        self.ws_2 = True
+        self.button2.click()
+        self.ws_2 = False
+    
+    def simulate_button_click_3(self):
+        self.ws_3 = True
+        self.button3.click()
+        self.ws_3 = False
+    
+    def simulate_button_click_4(self):
+        self.ws_4 = True
+        self.button4.click()
+        self.ws_4 = False
 
         # ------------------------- ESTABLISH THE RECEPTORS -------------------------"
 
