@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QLabel, QHBoxLayout, QStackedWidget, QPushButton
+from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QLineEdit, QSizePolicy, QProgressBar, QFileDialog
 from graphic_elements.desplegable_menu_1 import DropdownWindow1
 from graphic_elements.desplegable_menu_2 import DropdownWindow2
 from graphic_elements.desplegable_menu_3 import DropdownWindow3
@@ -7,6 +7,12 @@ from graphic_elements.desplegable_menu_4 import DropdownWindow4
 from graphic_elements.label_text import CustomLabel
 from graphic_elements.py_toggle import CustomCheckBox
 from graphic_elements.up_button_triangle import CustomTriangleButton
+from graphic_elements.label_for_path import CustomPathLabel
+from graphic_elements.MyCombo import CustomCombo
+from graphic_elements.up_buttons import CustomButton
+from graphic_elements.label_titles import CustomTitleLabel
+from codes.Crear_sdf_pdbqt_clase_2 import Conversiones
+from codes.Crear_sdf_pdbqt_clase_2 import Maximo
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import Qt
 
@@ -17,11 +23,6 @@ class MainWindow(QMainWindow):
 
         # ------------------------- ESTABLISH THE MAIN ATTRIBUTES -------------------------"
 
-        # Simulated clicks between buttons
-        self.cs_1 = False
-        self.cs_2 = False
-        self.cs_3 = False
-        self.cs_4 = False
 
         # Simulated clicks between windows
         self.ws_1 = False
@@ -33,7 +34,7 @@ class MainWindow(QMainWindow):
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.1") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.2") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -142,7 +143,7 @@ class MainWindow(QMainWindow):
                 border-left: none;
                 border-right: none;
                 border-bottom: 2.5px solid #6d6d6d;
-                background-color: #4c4c4c;
+                background-color: #333333;
             }
         """)
 
@@ -152,27 +153,55 @@ class MainWindow(QMainWindow):
             }
         """)
         
+        
+        # ------------------------- ESTABLISH THE DROPDOWNWINDOW INSTANCES -------------------------"
+        
+
+        # Drop declarations
+        self.dropdown_1 = DropdownWindow1(self)
+        self.dropdown_1.button1Clicked.connect(self.page_11_signal)
+        self.dropdown_1.button2Clicked.connect(self.page_12_signal)
+
+        self.dropdown_2 = DropdownWindow2(self)
+        self.dropdown_2.button1Clicked.connect(self.page_21_signal)
+        self.dropdown_2.button2Clicked.connect(self.page_22_signal)
+
+
+        self.dropdown_3 = DropdownWindow3(self)
+        self.dropdown_3.button1Clicked.connect(self.page_31_signal)
+        self.dropdown_3.button2Clicked.connect(self.page_32_signal)
+        self.dropdown_3.button3Clicked.connect(self.page_33_signal)
+
+
+        self.dropdown_4 = DropdownWindow4(self)
+        self.dropdown_4.button1Clicked.connect(self.page_41_signal)
+        self.dropdown_4.button2Clicked.connect(self.page_42_signal)
+        self.dropdown_4.button3Clicked.connect(self.page_43_signal)
+        self.dropdown_4.button4Clicked.connect(self.page_44_signal)
+        self.dropdown_4.button5Clicked.connect(self.page_45_signal)
+        self.dropdown_4.button6Clicked.connect(self.page_46_signal)
+        self.dropdown_4.button7Clicked.connect(self.page_47_signal)
+        self.dropdown_4.button8Clicked.connect(self.page_48_signal)
+
+
+
 
         # ------------------------- ESTABLISH THE MAIN WIDGET -------------------------"
+
+
+
         self.setCentralWidget(self.main_frame)
-        self.dropdown_1 = DropdownWindow1(self)
-        self.dropdown_2 = DropdownWindow2(self)
-        self.dropdown_3 = DropdownWindow3(self)
-        self.dropdown_4 = DropdownWindow4(self)
+        
+
 
         # ------------------------- ESTABLISH THE CONNECTIONS -------------------------"
         
-        self.button1.clicked.connect(self.signal_1)
+
         self.button1.clicked.connect(self.show_dropdown_1)
-
-        self.button2.clicked.connect(self.signal_2)
         self.button2.clicked.connect(self.show_dropdown_2)
-
-        self.button3.clicked.connect(self.signal_3)
         self.button3.clicked.connect(self.show_dropdown_3)
-
-        self.button4.clicked.connect(self.signal_4)
         self.button4.clicked.connect(self.show_dropdown_4)
+
 
 
         # ------------------------- DROPSHOW FUNCTIONS -------------------------"
@@ -183,7 +212,7 @@ class MainWindow(QMainWindow):
             button_rect = self.button1.rect()
             button_pos = self.button1.mapToGlobal(button_rect.bottomLeft())
             self.dropdown_1.move(button_pos)
-            self.dropdown_1.show()
+            self.dropdown_1.show(self.button1)
     
     
     def show_dropdown_2(self):
@@ -191,21 +220,21 @@ class MainWindow(QMainWindow):
             button_rect = self.button2.rect()
             button_pos = self.button2.mapToGlobal(button_rect.bottomLeft())
             self.dropdown_2.move(button_pos)
-            self.dropdown_2.show()
+            self.dropdown_2.show(self.button2)
 
     def show_dropdown_3(self):
         if not self.ws_3:
             button_rect = self.button3.rect()
             button_pos = self.button3.mapToGlobal(button_rect.bottomLeft())
             self.dropdown_3.move(button_pos)
-            self.dropdown_3.show()
+            self.dropdown_3.show(self.button3)
     
     def show_dropdown_4(self):
         if not self.ws_4:
             button_rect = self.button4.rect()
             button_pos = self.button4.mapToGlobal(button_rect.bottomLeft())
             self.dropdown_4.move(button_pos)
-            self.dropdown_4.show()
+            self.dropdown_4.show(self.button4)
     
     def simulate_button_click_1(self):
         self.ws_1 = True
@@ -227,138 +256,514 @@ class MainWindow(QMainWindow):
         self.button4.click()
         self.ws_4 = False
 
-        # ------------------------- ESTABLISH THE RECEPTORS -------------------------"
-
-    def signal_1(self):
-        
-        # Check simulated clicks
-
-        if self.button2.isChecked() and (self.cs_1 == False):
-            self.cs_2 = True
-            self.button2.click()
-
-        if self.button3.isChecked() and (self.cs_1 == False):
-            self.cs_3 = True
-            self.button3.click()
-
-        if self.button4.isChecked() and (self.cs_1 == False):
-            self.cs_4 = True
-            self.button4.click()
-        
-        # Return to false the simulated clicks
-        self.cs_2 = False
-        self.cs_3 = False
-        self.cs_4 = False
-
-        self.main_stack.setCurrentIndex(0)
-    
-    def signal_2(self):
-        
-        # Check simulated clicks
-
-        if self.button1.isChecked() and (self.cs_2 == False):
-            self.cs_1 = True
-            self.button1.click()
-
-        if self.button3.isChecked() and (self.cs_2 == False):
-            self.cs_3 = True
-            self.button3.click()
-
-        if self.button4.isChecked() and (self.cs_2 == False):
-            self.cs_4 = True
-            self.button4.click()
-        
-        # Return to false the simulated clicks
-        self.cs_1 = False
-        self.cs_3 = False
-        self.cs_4 = False
-
-        self.main_stack.setCurrentIndex(1)
-
-
-    def signal_3(self):
-
-        if self.button1.isChecked() and (self.cs_3 == False):
-            self.cs_1 = True
-            self.button1.click()
-
-        if self.button2.isChecked() and (self.cs_3 == False):
-            self.cs_2 = True
-            self.button2.click()
-
-        if self.button4.isChecked() and (self.cs_3 == False):
-            self.cs_4 = True
-            self.button4.click()
-        
-        # Return to false the simulated clicks
-        self.cs_1 = False
-        self.cs_2 = False
-        self.cs_4 = False
-
-        self.main_stack.setCurrentIndex(2)
-
-
-
-    def signal_4(self):
-        
-        if self.button1.isChecked() and (self.cs_4 == False):
-            self.cs_1 = True
-            self.button1.click()
-
-        if self.button2.isChecked() and (self.cs_4 == False):
-            self.cs_2 = True
-            self.button2.click()
-
-        if self.button3.isChecked() and (self.cs_4 == False):
-            self.cs_3 = True
-            self.button3.click()
-        
-        # Return to false the simulated clicks
-        self.cs_1 = False
-        self.cs_2 = False
-        self.cs_3 = False
-
-        self.main_stack.setCurrentIndex(3)
-    
-
-
         # ------------------------- ESTABLISH THE PAGES FUNCTIONS -------------------------"
+
+
+    # *************************************** PAGE 1 ***************************************
+
 
     def setup_page1(self):
 
+        # Establish the stacked widget
+        self.page_1_stack = QStackedWidget()
+        self.page_11 = QWidget()
+        self.page_12 = QWidget()
+        
+        # Add widgets to the stacked widget
+        self.page_1_stack.addWidget(self.page_11)
+        self.page_1_stack.addWidget(self.page_12)
+        
+        # configure the pages content
+        self.setup_page11()
+        self.setup_page12()
+        
+        # Establish the current index
+        self.page_1_stack.setCurrentIndex(0)
+        
+        # Configure the page 1 layout
+        page1_layout = QVBoxLayout()
+        page1_layout.addWidget(self.page_1_stack)
+        self.page1.setLayout(page1_layout)
+
+
+
+    def setup_page11(self):
+
+        #Principal layout 
         layout = QVBoxLayout()
+        layout.setContentsMargins(20, 0, 20, 0)
+        layout.setSpacing(0) 
 
-        label = CustomLabel("Este es un QLabel en la Página 1")
-        label2 = CustomLabel("Este es un QLabel en la Página 1, label 2")
+
+        # Superior Spacer
+
+        # Description label
+        des_label = CustomTitleLabel("Prepare ligand with Meeko")
+
+        # Title layout
+        title_layout = QHBoxLayout()
+        TSL = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        TSR = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+
+        # Label of Combo Box
+        label_combo = CustomLabel("File Format: ")
+        label_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        
+        # ComboBox
+        Combo = CustomCombo()
+        Combo.addItem("smi format")
+        Combo.addItem("sdf format")
+        Combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        # File Format Spacer 2
+        FFS2 = QSpacerItem(1000, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        
+
+        # HCombolayout
+        HCombolayout = QHBoxLayout()
+
+
+        # File path
+        label_file = CustomLabel("File Path: ")
+        label_file.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        label_file.setFixedHeight(30)
+
+        # File Label for path
+        label_path = CustomPathLabel("")
+
+        # Button for file path
+        Button_path = QPushButton("...")
+        Button_path.setFixedWidth(40)
+        Button_path.setFixedHeight(40)
+        Button_path.clicked.connect(lambda: self.open_file_dialog("Text files (*.txt);;smi files (*.smi);;Todos los archivos (*);;" , label_path))
+
+        # Horizontal layout
+        Hlayout = QHBoxLayout()
+
+        # Convert layout
+        Clayout = QHBoxLayout()
+        CSL = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        CSR = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+
+        # PushButton
+        PButton = CustomButton("Convert")
+        PButton.clicked.connect(lambda: self.conversion_smi_to_pdbqt(label_path, ProgresBar))
+        PButton.setFixedWidth(300)
+
+
+        # Progress Bar
+        ProgresBar = QProgressBar()
+        ProgresBar.setFixedHeight(50)
+
+        # bottom Spacer
+        spacer_bottom = QSpacerItem(10, 600, QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+
+        #  ------------- Add Items -------------
+
+        # Title layout
+        
+        title_layout.addItem(TSL)
+        title_layout.addWidget(des_label)
+        title_layout.addItem(TSR)
+        layout.addItem(title_layout)
+
+        # Horizontal combo layout
+        layout.addSpacing(100)
+        HCombolayout.addWidget(label_combo)
+        HCombolayout.addWidget(Combo)
+        HCombolayout.addItem(FFS2)
+        layout.addItem(HCombolayout)
+        layout.addSpacing(100)
+
+
+        layout.addWidget(label_file)
+        layout.setSpacing(5)
+
+
+        # Horizontal label path and button path layout
+        Hlayout.addWidget(label_path)
+        Hlayout.addWidget(Button_path)
+        layout.addItem(Hlayout)
+        layout.addSpacing(100)
+
+        # Horizontal layout for the button
+        Clayout.addItem(CSL)
+        Clayout.addWidget(PButton)
+        Clayout.addItem(CSR)
+        layout.addItem(Clayout)
+
+        layout.addSpacing(50)
+        layout.addWidget(ProgresBar)
+        layout.addItem(spacer_bottom)
+        
+        # Set layout
+        self.page_11.setLayout(layout)
+    
+    def conversion_smi_to_pdbqt(self, label, bar ):
+        print(label.text())
+
+        try:
+            Con = Conversiones()
+            maxim = Maximo()
+
+            maxim.contar_maximo(label.text())
+            print(maxim.maximo)
+
+            bar.setMaximum(maxim.maximo)
+            
+            for current_count, _, _ in Con.conversion(label.text()):
+                bar.setValue(current_count)
+
+        except Exception as e:
+            print("Hubo un problema:", e)
+        
+
+    def setup_page12(self):
+
+        
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        spacer_superior = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        label = CustomLabel("Este es un QLabel en la Página 12")
+        label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        label2 = CustomLabel("Este es un QLabel en la Página 12, label 2")
+        label2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        spacer_bottom = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
         CB = CustomCheckBox()
-        button = QPushButton("Este es un QPushButton en la Página 1")
+        layout.addItem(spacer_superior)
+        layout.addWidget(label)
+        layout.addWidget(label2)
+        layout.addWidget(CB)
+        layout.addItem(spacer_bottom)
+        self.page_12.setLayout(layout)
 
+
+    # *************************************** PAGE 2 ***************************************
+
+    def setup_page2(self):
+        
+        # Establish the stacked widget
+        self.page_2_stack = QStackedWidget()
+        self.page_21 = QWidget()
+        self.page_22 = QWidget()
+        
+        # Add widgets to the stacked widget
+        self.page_2_stack.addWidget(self.page_21)
+        self.page_2_stack.addWidget(self.page_22)
+        
+        # configure the pages content
+        self.setup_page21()
+        self.setup_page22()
+        
+        # Establish the current index
+        self.page_2_stack.setCurrentIndex(0)
+        
+        # Configure the page 2 layout
+        page2_layout = QVBoxLayout()
+        page2_layout.addWidget(self.page_2_stack)
+        self.page2.setLayout(page2_layout)
+
+
+    def setup_page21(self):
+
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 21")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 21")
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_21.setLayout(layout)
+
+    def setup_page22(self):
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 22")
+        label2 = CustomLabel("Este es un QLabel en la Página 22, label 2")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 22")
         layout.addWidget(label)
         layout.addWidget(label2)
         layout.addWidget(CB)
         layout.addWidget(button)
+        self.page_22.setLayout(layout)  
 
 
-        self.page1.setLayout(layout)
-    
-    def setup_page2(self):
-        layout = QVBoxLayout()
-        layout.addWidget(QPushButton("Botón en Página 2"))
-        self.page2.setLayout(layout)
+    # *************************************** PAGE 3 ***************************************
 
     def setup_page3(self):
+
+        # Establish the stacked widget
+        self.page_3_stack = QStackedWidget()
+        self.page_31 = QWidget()
+        self.page_32 = QWidget()
+        self.page_33 = QWidget()
+        
+        # Add widgets to the stacked widget
+        self.page_3_stack.addWidget(self.page_31)
+        self.page_3_stack.addWidget(self.page_32)
+        self.page_3_stack.addWidget(self.page_33)
+        
+        # configure the pages content
+        self.setup_page31()
+        self.setup_page32()
+        self.setup_page33()
+        
+        # Establish the current index
+        self.page_3_stack.setCurrentIndex(0)
+        
+        # Configure the page 2 layout
+        page3_layout = QVBoxLayout()
+        page3_layout.addWidget(self.page_3_stack)
+        self.page3.setLayout(page3_layout)
+
+    def setup_page31(self):
+
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton("Botón en Página 3"))
-        self.page3.setLayout(layout)
+        label = CustomLabel("Este es un QLabel en la Página 31")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 31") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_31.setLayout(layout) 
+    
+    def setup_page32(self):
+
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 32")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 32") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_32.setLayout(layout) 
+
+    def setup_page33(self):
+
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 33")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 33") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_33.setLayout(layout) 
+
+
+
+    # *************************************** PAGE 4 ***************************************
 
     def setup_page4(self):
+
+        # Establish the stacked widget
+        self.page_4_stack = QStackedWidget()
+        self.page_41 = QWidget()
+        self.page_42 = QWidget()
+        self.page_43 = QWidget()
+        self.page_44 = QWidget()
+        self.page_45 = QWidget()
+        self.page_46 = QWidget()
+        self.page_47 = QWidget()
+        self.page_48 = QWidget()
+        
+        # Add widgets to the stacked widget
+        self.page_4_stack.addWidget(self.page_41)
+        self.page_4_stack.addWidget(self.page_42)
+        self.page_4_stack.addWidget(self.page_43)
+        self.page_4_stack.addWidget(self.page_44)
+        self.page_4_stack.addWidget(self.page_45)
+        self.page_4_stack.addWidget(self.page_46)
+        self.page_4_stack.addWidget(self.page_47)
+        self.page_4_stack.addWidget(self.page_48)
+        
+        # configure the pages content
+        self.setup_page41()
+        self.setup_page42()
+        self.setup_page43()
+        self.setup_page44()
+        self.setup_page45()
+        self.setup_page46()
+        self.setup_page47()
+        self.setup_page48()
+        
+        # Establish the current index
+        self.page_4_stack.setCurrentIndex(0)
+        
+        # Configure the page 2 layout
+        page4_layout = QVBoxLayout()
+        page4_layout.addWidget(self.page_4_stack)
+        self.page4.setLayout(page4_layout)
+    
+
+    def setup_page41(self):
+
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton("Botón en Página 4"))
-        self.page4.setLayout(layout)
+        label = CustomLabel("Este es un QLabel en la Página 41")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 41") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_41.setLayout(layout) 
+
+    def setup_page42(self):
+
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 42")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 42") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_42.setLayout(layout)
+    
+    def setup_page43(self):
+
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 43")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 43") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_43.setLayout(layout)
+    
+    def setup_page44(self):
+
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 44")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 44") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_44.setLayout(layout)
+    
+    def setup_page45(self):
+
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 45")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 45") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_45.setLayout(layout)
+    
+    def setup_page46(self):
+
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 46")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 46") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_46.setLayout(layout)
+    
+    def setup_page47(self):
+
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 47")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 47") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_47.setLayout(layout)
+    
+    def setup_page48(self):
+
+        layout = QVBoxLayout()
+        label = CustomLabel("Este es un QLabel en la Página 48")
+        CB = CustomCheckBox()
+        button = QPushButton("Este es un QPushButton en la Página 48") 
+        layout.addWidget(label)
+        layout.addWidget(CB)
+        layout.addWidget(button)
+        self.page_48.setLayout(layout)
+
+    # ------------------------- ESTABLISH THE PAGES DIRECTIONS -------------------------"
+
+    def open_file_dialog(self, files, label):
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select file",
+            "",
+            files # File filter
+        )
+
+        # Mostrar la ruta del archivo seleccionado en el QLabel
+        label.setText(file_path)
+
+    
+    # ------------------------- ESTABLISH THE PAGES DIRECTIONS -------------------------"
+
+    def page_11_signal(self):
+        self.main_stack.setCurrentIndex(0)
+        self.page_1_stack.setCurrentIndex(0)
+    
+    def page_12_signal(self):
+        self.main_stack.setCurrentIndex(0)
+        self.page_1_stack.setCurrentIndex(1)
+    
+    def page_21_signal(self):
+        self.main_stack.setCurrentIndex(1)
+        self.page_2_stack.setCurrentIndex(0)
+    
+    def page_22_signal(self):
+        self.main_stack.setCurrentIndex(1)
+        self.page_2_stack.setCurrentIndex(1)
+
+    def page_31_signal(self):
+        self.main_stack.setCurrentIndex(2)
+        self.page_3_stack.setCurrentIndex(0)
+    
+    def page_32_signal(self):
+        self.main_stack.setCurrentIndex(2)
+        self.page_3_stack.setCurrentIndex(1)
+    
+    def page_33_signal(self):
+        self.main_stack.setCurrentIndex(2)
+        self.page_3_stack.setCurrentIndex(2)
+    
+    def page_41_signal(self):
+        self.main_stack.setCurrentIndex(3)
+        self.page_4_stack.setCurrentIndex(0)
+    
+    def page_42_signal(self):
+        self.main_stack.setCurrentIndex(3)
+        self.page_4_stack.setCurrentIndex(1)
+    
+    def page_43_signal(self):
+        self.main_stack.setCurrentIndex(3)
+        self.page_4_stack.setCurrentIndex(2)
+
+    def page_44_signal(self):
+        self.main_stack.setCurrentIndex(3)
+        self.page_4_stack.setCurrentIndex(3)
+    
+    def page_45_signal(self):
+        self.main_stack.setCurrentIndex(3)
+        self.page_4_stack.setCurrentIndex(4)
+    
+    def page_46_signal(self):
+        self.main_stack.setCurrentIndex(3)
+        self.page_4_stack.setCurrentIndex(5)
+    
+    def page_47_signal(self):
+        self.main_stack.setCurrentIndex(3)
+        self.page_4_stack.setCurrentIndex(6)
+    
+    def page_48_signal(self):
+        self.main_stack.setCurrentIndex(3)
+        self.page_4_stack.setCurrentIndex(7)
 
 
-        
-        
+       
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
