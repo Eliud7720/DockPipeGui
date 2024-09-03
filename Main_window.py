@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QLineEdit, QSizePolicy, QProgressBar, QFileDialog
+import os
 from graphic_elements.desplegable_menu_1 import DropdownWindow1
 from graphic_elements.desplegable_menu_2 import DropdownWindow2
 from graphic_elements.desplegable_menu_3 import DropdownWindow3
@@ -11,8 +11,9 @@ from graphic_elements.label_for_path import CustomPathLabel
 from graphic_elements.MyCombo import CustomCombo
 from graphic_elements.up_buttons import CustomButton
 from graphic_elements.label_titles import CustomTitleLabel
-from codes.Crear_sdf_pdbqt_clase_2 import Conversiones
-from codes.Crear_sdf_pdbqt_clase_2 import Maximo
+from codes.Create_pdbqt_by_smi import Conversions
+from codes.Create_pdbqt_by_smi import Maximum
+from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QSizePolicy, QProgressBar, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import Qt
 
@@ -34,7 +35,7 @@ class MainWindow(QMainWindow):
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.2") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.4") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -335,7 +336,7 @@ class MainWindow(QMainWindow):
         Button_path = QPushButton("...")
         Button_path.setFixedWidth(40)
         Button_path.setFixedHeight(40)
-        Button_path.clicked.connect(lambda: self.open_file_dialog("Text files (*.txt);;smi files (*.smi);;Todos los archivos (*);;" , label_path))
+        Button_path.clicked.connect(lambda: self.open_file_dialog("Text files (*.txt);;smi files (*.smi);;All files (*);;" , label_path))
 
         # Horizontal layout
         Hlayout = QHBoxLayout()
@@ -347,7 +348,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_smi_to_pdbqt(label_path, ProgresBar))
+        PButton.clicked.connect(lambda: self.conversion_smi_to_pdbqt(label_path, ProgresBar, Combo))
         PButton.setFixedWidth(300)
 
 
@@ -400,24 +401,33 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_11.setLayout(layout)
     
-    def conversion_smi_to_pdbqt(self, label, bar ):
-        print(label.text())
-
-        try:
-            Con = Conversiones()
-            maxim = Maximo()
-
-            maxim.contar_maximo(label.text())
-            print(maxim.maximo)
-
-            bar.setMaximum(maxim.maximo)
-            
-            for current_count, _, _ in Con.conversion(label.text()):
-                bar.setValue(current_count)
-
-        except Exception as e:
-            print("Hubo un problema:", e)
+    def conversion_smi_to_pdbqt(self, label, bar, combo):
         
+        file_path = label.text()
+
+        if os.path.isfile(file_path):
+
+            if (combo.currentIndex() == 0):
+                try:
+                    Con = Conversions()
+                    maxim = Maximum()
+
+                    maxim.contar_maximo(label.text())
+
+                    bar.setMaximum(maxim.maximo)
+                    
+                    for current_count, _, _ in Con.conversion(label.text()):
+                        bar.setValue(current_count)
+
+                except Exception as e:
+                    QMessageBox.critical(self, "Error 1-2", e)
+
+            elif (combo.currentIndex() == 1):
+                print("Hola patito")
+        
+        else:
+            QMessageBox.critical(self, "Error 1-1", "Please, introduce a correct file path.")
+
 
     def setup_page12(self):
 
