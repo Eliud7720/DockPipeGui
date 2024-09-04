@@ -16,11 +16,12 @@ class Conversions:
         self.errors = {}
         self.maximum = 0
 
-    def conversion(self, path: str):
+    def conversion(self, path: str, folder: str):
         """
         Main function responsible for performing conversions.
 
         path: Select the file path.
+        str: The name of the folder.
         """
         # Creation of the lists
         list_smiles = []
@@ -37,8 +38,8 @@ class Conversions:
 
         self.maximum = len(list_smiles)
 
-        # Create the PDBQT files if not exists
-        os.makedirs("PDBQT files", exist_ok=True)
+        # Create the folder if not exists
+        os.makedirs(folder, exist_ok=True)
 
         for index, smile in enumerate(list_smiles):
             name = list_ID[index]
@@ -70,7 +71,7 @@ class Conversions:
 
 
                 # Save PDBQT to file
-                pdbqt_path = os.path.join("PDBQT files", name + ".pdbqt")
+                pdbqt_path = os.path.join(folder, name + ".pdbqt")
                 with open(pdbqt_path, 'w') as archivo:
                     archivo.write(pdbqt_string)
 
@@ -83,7 +84,7 @@ class Conversions:
 
         # Save errors in a file
         if self.errors:
-            error_file_path = os.path.join("PDBQT files", "errors.txt")
+            error_file_path = os.path.join(folder, "errors.txt")
             with open(error_file_path, "w") as archivo:
                 for key, value in self.errors.items():
                     archivo.write(f"{key}: {value}\n")
@@ -99,7 +100,6 @@ class Maximum:
         list_smiles = []
         list_ID = []
 
-        # Abrir archivo
         with open(ruta, 'r') as archivo:
             lineas = archivo.readlines()
 
