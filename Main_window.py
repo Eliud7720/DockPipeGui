@@ -15,6 +15,7 @@ from graphic_elements.Line_edit import CustomLineEdit
 from codes import Create_pdbqt_by_smi_meeko
 from codes import Create_pdbqt_by_txt_meeko
 from codes import Create_pdbqt_by_sdf_meeko
+from codes import Create_pdbqt_by_txt_obabel
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QSizePolicy, QProgressBar, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
 from PySide6.QtCore import Qt, QRegularExpression
@@ -355,7 +356,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt(label_path, ProgresBar, Combo, MyLE))
+        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_11(label_path, ProgresBar, Combo, MyLE))
         PButton.setFixedWidth(300)
 
 
@@ -411,7 +412,7 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_11.setLayout(layout)
     
-    def conversion_to_pdbqt(self, label, bar, combo, LineEdit):
+    def conversion_to_pdbqt_11(self, label, bar, combo, LineEdit):
         
         file_path = label.text()
         folder_text = LineEdit.text() if LineEdit.text() != "" else "PDBQT files"
@@ -426,11 +427,11 @@ class MainWindow(QMainWindow):
                     maxim.contar_maximo(label.text())
                     bar.setMaximum(maxim.maximo)
                     
-                    for current_count, _, _ in Con.conversion(label.text(), folder_text):
+                    for current_count, _, _ in Con.conversion(file_path, folder_text):
                         bar.setValue(current_count)
 
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 1-3", e)
+                    QMessageBox.critical(self, "Error 1_1-2", e)
 
             elif (combo.currentIndex() == 1):
                 try:
@@ -441,11 +442,11 @@ class MainWindow(QMainWindow):
 
                     bar.setMaximum(maxim.maximo)
                     
-                    for current_count, _, _ in Con.conversion(label.text(), folder_text):
+                    for current_count, _, _ in Con.conversion(file_path, folder_text):
                         bar.setValue(current_count)
 
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 1-4", e)
+                    QMessageBox.critical(self, "Error 1_1-3", e)
 
             elif (combo.currentIndex() == 2):
                 try:
@@ -456,14 +457,14 @@ class MainWindow(QMainWindow):
 
                     bar.setMaximum(maxim.maximo)
                     
-                    for current_count, _, _ in Con.conversion(label.text(), folder_text):
+                    for current_count, _, _ in Con.conversion(file_path, folder_text):
                         bar.setValue(current_count)
 
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 1-4", e)
+                    QMessageBox.critical(self, "Error 1_1-4", e)
         
         else:
-            QMessageBox.critical(self, "Error 1-1", "Please, introduce a correct file path.")
+            QMessageBox.critical(self, "Error 1_1-1", "Please, introduce a correct file path.")
 
 
     def get_file_filter_11(self, combo):
@@ -515,7 +516,7 @@ class MainWindow(QMainWindow):
         Button_path = QPushButton("...")
         Button_path.setFixedWidth(40)
         Button_path.setFixedHeight(40)
-        Button_path.clicked.connect(lambda: self.open_file_dialog(self.get_file_filter_11(Combo), label_path))
+        Button_path.clicked.connect(lambda: self.open_file_dialog(self.get_file_filter_12(Combo), label_path))
 
         # Horizontal layout
         Hlayout = QHBoxLayout()
@@ -528,7 +529,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt(label_path, ProgresBar, Combo, MyLE))
+        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_12(label_path, ProgresBar, Combo, MyLE))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -588,6 +589,48 @@ class MainWindow(QMainWindow):
         layout.addItem(spacer_bottom)
         self.page_12.setLayout(layout)
 
+    def conversion_to_pdbqt_12(self, label, bar, combo, LineEdit):
+        
+        file_path = label.text()
+        folder_text = LineEdit.text() if LineEdit.text() != "" else "PDBQT files"
+
+        if os.path.isfile(file_path):
+
+            if (combo.currentIndex() == 0):
+
+                try:
+                    pass
+
+                except Exception as e:
+                    QMessageBox.critical(self, "Error 1-3", e)
+
+            elif (combo.currentIndex() == 1):
+                try:
+                    pass
+
+                except Exception as e:
+                    QMessageBox.critical(self, "Error 1_1-4", e)
+
+            elif (combo.currentIndex() == 2):
+                
+                Con = Create_pdbqt_by_txt_obabel.Conversions()
+                Con.Maximum(label.text())
+                bar.setMaximum(Con.maxim)
+
+                for pdbqt_file in Con.conversions(folder_text, file_path):
+                    bar.setValue(Con.contator)
+
+        
+        else:
+            QMessageBox.critical(self, "Error 1_2-1", "Please, introduce a correct file path.")
+
+    def get_file_filter_12(self, combo):
+        if combo.currentIndex() == 0:
+            return "smi files (*.smi);;All files (*);;"
+        elif combo.currentIndex() == 1:
+            return "sdf files (*.sdf);;All files (*);;"
+        elif combo.currentIndex() == 2:
+            return "txt files (*.txt);;All files (*);;"
 
 
     # *************************************** PAGE 2 ***************************************
