@@ -16,6 +16,8 @@ from codes import Create_pdbqt_by_smi_meeko
 from codes import Create_pdbqt_by_txt_meeko
 from codes import Create_pdbqt_by_sdf_meeko
 from codes import Create_pdbqt_by_txt_obabel
+from codes import Create_pdbqt_by_sdf_obabel
+from codes import Create_pdbqt_by_smi_obabel
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QSizePolicy, QProgressBar, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
 from PySide6.QtCore import Qt, QRegularExpression
@@ -38,7 +40,7 @@ class MainWindow(QMainWindow):
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.5") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.6") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -599,26 +601,43 @@ class MainWindow(QMainWindow):
             if (combo.currentIndex() == 0):
 
                 try:
-                    pass
+                    Con = Create_pdbqt_by_smi_obabel.Conversions()
+                    Con.Maximum(label.text())
+                    bar.setMaximum(Con.maxim)
+
+                    for pdbqt_file in Con.conversions(folder_text, file_path):
+                        bar.setValue(Con.contator)
 
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 1-3", e)
+                    QMessageBox.critical(self, "Error 1_2-1", e)
 
             elif (combo.currentIndex() == 1):
                 try:
-                    pass
+                    Con = Create_pdbqt_by_sdf_obabel.Conversions()
+                    Con.Maximum(label.text())
+                    bar.setMaximum(Con.maxim)
+                    
+                    
+                    for pdbqt_file in Con.conversions(folder_text, file_path):
+                        bar.setValue(Con.contator)
+                    
 
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 1_1-4", e)
+                    QMessageBox.critical(self, "Error 1_2-2", e)
 
             elif (combo.currentIndex() == 2):
                 
-                Con = Create_pdbqt_by_txt_obabel.Conversions()
-                Con.Maximum(label.text())
-                bar.setMaximum(Con.maxim)
+                try:
 
-                for pdbqt_file in Con.conversions(folder_text, file_path):
-                    bar.setValue(Con.contator)
+                    Con = Create_pdbqt_by_txt_obabel.Conversions()
+                    Con.Maximum(label.text())
+                    bar.setMaximum(Con.maxim)
+
+                    for pdbqt_file in Con.conversions(folder_text, file_path):
+                        bar.setValue(Con.contator)
+                
+                except Exception as e:
+                    QMessageBox.critical(self, "Error 1_2-3", e)
 
         
         else:
