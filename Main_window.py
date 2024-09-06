@@ -18,6 +18,7 @@ from codes import Create_pdbqt_by_sdf_meeko
 from codes import Create_pdbqt_by_txt_obabel
 from codes import Create_pdbqt_by_sdf_obabel
 from codes import Create_pdbqt_by_smi_obabel
+from codes import Create_protein_pdbqt_by_obabel
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QSizePolicy, QProgressBar, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
 from PySide6.QtCore import Qt, QRegularExpression
@@ -40,7 +41,7 @@ class MainWindow(QMainWindow):
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.6") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.7") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -680,14 +681,124 @@ class MainWindow(QMainWindow):
 
     def setup_page21(self):
 
+        #  ------------- Create items -------------
+
+        # Create the layout
         layout = QVBoxLayout()
-        label = CustomLabel("Este es un QLabel en la Página 21")
-        CB = CustomCheckBox()
-        button = QPushButton("Este es un QPushButton en la Página 21")
-        layout.addWidget(label)
-        layout.addWidget(CB)
-        layout.addWidget(button)
+
+        # Description label
+        des_label = CustomTitleLabel("Prepare receptor with Openbabel")
+
+        # Title layout
+        title_layout = QHBoxLayout()
+        TSL = QSpacerItem(10000, 10, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        TSR = QSpacerItem(10000, 10, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        
+        # File path
+        label_file = CustomLabel("Folder Path: ")
+        label_file.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        label_file.setFixedHeight(30)
+
+        # File Label for path
+        label_path = CustomPathLabel("")
+
+        # Button for file path
+        Button_path = QPushButton("...")
+        Button_path.setFixedWidth(40)
+        Button_path.setFixedHeight(40)
+        Button_path.clicked.connect(lambda: self.open_folder_dialog(label_path))
+
+        # Horizontal layout
+        Hlayout = QHBoxLayout()
+
+        # Line Edit
+        TextLE = CustomLabel("Name folder: ")
+        MyLE = CustomLineEdit()
+        validator = QRegularExpressionValidator(QRegularExpression("^[A-Za-z ]*$"))
+        MyLE.setValidator(validator)
+
+        # PushButton
+        PButton = CustomButton("Convert")
+        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_21(label_path, ProgresBar, MyLE))
+        PButton.setFixedWidth(300)
+
+        # Progress Bar
+        ProgresBar = QProgressBar()
+        ProgresBar.setFixedHeight(50)
+
+        # Convert layout
+        Clayout = QHBoxLayout()
+        CSL = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        CSR = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        
+        # Bottom Spacer
+        spacer_bottom = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        # Create layout
+        layout = QVBoxLayout()
+
+        #  ------------- Add Items -------------
+        
+        # Add title
+        title_layout.addItem(TSL)
+        title_layout.addWidget(des_label)
+        title_layout.addItem(TSR)
+        layout.addItem(title_layout)
+        layout.addSpacing(70)
+        layout.addWidget(label_file)
+
+
+        # Horizontal label path and button path layout
+        Hlayout.addWidget(label_path)
+        Hlayout.addWidget(Button_path)
+        layout.addItem(Hlayout)
+        layout.addSpacing(70)
+
+        # Add the line edit
+        layout.addWidget(TextLE)
+        layout.addWidget(MyLE)
+        layout.addSpacing(70)
+        
+        # Horizontal layout for the button
+        Clayout.addItem(CSL)
+        Clayout.addWidget(PButton)
+        Clayout.addItem(CSR)
+        layout.addItem(Clayout)
+
+        # Progress bar and bottom
+        layout.addSpacing(20)
+        layout.addWidget(ProgresBar)
+        layout.addItem(spacer_bottom)
+
+        # Set layout and final spacer
+        layout.addItem(spacer_bottom)
+        self.page_12.setLayout(layout)
+
+        # Establish layout
         self.page_21.setLayout(layout)
+
+    def conversion_to_pdbqt_21(self, label, bar, LineEdit):
+        
+        file_path = label.text()
+        folder_text = LineEdit.text() if LineEdit.text() != "" else "PDBQT files"
+
+        if os.path.isdir(file_path):
+
+            try:
+                Con = Create_protein_pdbqt_by_obabel.Conversions()
+                Con.Maximum(file_path)
+                bar.setMaximum(Con.maxim)
+
+                for pdbqt_file in Con.conversions(file_path, folder_text):
+                    bar.setValue(Con.contator)
+                
+
+            except Exception as e:
+                QMessageBox.critical(self, "Error 2_1-2", e)
+
+        
+        else:
+            QMessageBox.critical(self, "Error 2_1-1", "Please, introduce a correct file path.")
 
     def setup_page22(self):
         layout = QVBoxLayout()
@@ -908,8 +1019,19 @@ class MainWindow(QMainWindow):
             files # File filter
         )
 
-        # Mostrar la ruta del archivo seleccionado en el QLabel
+        # Set the file path
         label.setText(file_path)
+    
+    def open_folder_dialog(self, label):
+        # Abrir un cuadro de diálogo para seleccionar una carpeta
+        folder_path = QFileDialog.getExistingDirectory(
+            self,
+            "Select folder"
+        )
+        
+        # Set the folder path
+        label.setText(folder_path)
+
 
     
     # ------------------------- ESTABLISH THE PAGES DIRECTIONS -------------------------"
