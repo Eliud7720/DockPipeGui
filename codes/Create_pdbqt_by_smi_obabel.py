@@ -23,38 +23,15 @@ class Conversions():
             list_smiles.append(line.split()[0])
             list_ID.append(line.split()[1])
 
-        # Create a temporal file withouth ID's
-        temporal_file = real_folder + 'temp.txt'
-        with open(temporal_file, 'w') as file:
-            for smile in list_smiles:
-                file.write(smile + "\n")
-
-
-        
-        subprocess.run(['./lib/obabel', '-ismi', temporal_file, '-omol2', '-O', real_folder + 'ligand_.mol2', '-m', '--gen3d'], check=True)
-        
-
-        mol2_files = glob.glob(real_folder + '*.mol2')
-        mol2_files = sorted(mol2_files, key=lambda x: int(os.path.basename(x).split('_')[-1].replace('.mol2', '')))
-        
-        for mol2_file in mol2_files:
-            pdbqt_file = os.path.join(folder, os.path.basename(mol2_file).replace('.mol2', '.pdbqt'))
-            subprocess.run(['./lib/obabel', '-imol2', mol2_file, '-opdbqt', '-O', pdbqt_file], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        for i, smile in enumerate(list_smiles):
+            subprocess.run(["./lib/obabel", "-:" + smile, "-omol2", "-O", real_folder + f'ligand_{i}.mol2', '--gen3d'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            sdf = real_folder + f'ligand_{i}.mol2'
+            pdbqt = real_folder + f'ligand_{i}.pdbqt'
+            subprocess.run(['./lib/obabel', '-imol2', sdf, '-opdbqt', '-O', pdbqt], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             self.contator += 1
-            yield pdbqt_file
-
-        for mol2_file in mol2_files:
-            os.remove(mol2_file)
-        
-        os.remove(temporal_file)
-
-        pdbqt_files = glob.glob(real_folder + '*.pdbqt')
-        pdbqt_files = sorted(pdbqt_files, key=lambda x: int(os.path.basename(x).split('_')[-1].replace('.pdbqt', '')))
-
-
-        for i, pdbqt in enumerate(pdbqt_files):
+            os.remove(real_folder + f'ligand_{i}.mol2')
             os.rename(pdbqt, real_folder + list_ID[i] + ".pdbqt")
-
+            yield i
         
     def Maximum(self, file):
         with open(file, 'r') as f:

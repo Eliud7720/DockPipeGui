@@ -10,27 +10,25 @@ class Conversions():
     def conversions(self, folder, file):
         real_folder = folder + "/"
         os.makedirs(real_folder, exist_ok=True)
+        
+        # Create empty lists
+        list_smiles = []
 
-        with open('errors.txt', 'w') as error_file:
-            error_file.write("Moléculas que fallaron al generar coordenadas 3D:\n")
-        
-        result = subprocess.run(['./lib/obabel', '-ismi', file, '-omol2', '-O', real_folder + 'ligand_.mol2', '-m', '--gen3d'],
-                                capture_output=True, text=True)
-        
+        # Save ID's and SMiles
+        with open(file, 'r') as file:
+            lines = file.readlines()
 
-        mol2_files = glob.glob(real_folder + '*.mol2')
-        mol2_files = sorted(mol2_files, key=lambda x: int(os.path.basename(x).split('_')[-1].replace('.mol2', '')))
-        
-        for mol2_file in mol2_files:
-            pdbqt_file = os.path.join(folder, os.path.basename(mol2_file).replace('.mol2', '.pdbqt'))
-            result = subprocess.run(['./lib/obabel', '-imol2', mol2_file, '-opdbqt', '-O', pdbqt_file],
-                                    capture_output=True, text=True)
-            
+        for line in lines:
+            list_smiles.append(line)
+
+        for i, smile in enumerate(list_smiles):
+            subprocess.run(["./lib/obabel", "-:" + smile, "-omol2", "-O", real_folder + f'ligand_{i}.mol2', '--gen3d'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            sdf = real_folder + f'ligand_{i}.mol2'
+            pdbqt = real_folder + f'ligand_{i}.pdbqt'
+            subprocess.run(['./lib/obabel', '-imol2', sdf, '-opdbqt', '-O', pdbqt], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             self.contator += 1
-            yield pdbqt_file
-
-        for mol2_file in mol2_files:
-            os.remove(mol2_file)
+            os.remove(real_folder + f'ligand_{i}.mol2')
+            yield i
         
     def Maximum(self, file):
         with open(file, 'r') as f:

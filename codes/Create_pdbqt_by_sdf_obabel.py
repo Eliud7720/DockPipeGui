@@ -12,21 +12,24 @@ class Conversions():
         real_folder = folder + "/"
         os.makedirs(real_folder, exist_ok=True)
 
-        subprocess.run(['./lib/obabel', '-isdf', file, '-omol2', '-O', real_folder + 'ligand_.mol2', '-m', '--gen3d'], check=True)
+        # Smiles list
+        smiles_list = []
 
-        mol2_files = glob.glob(real_folder + '*.mol2')
+        supplier = Chem.SDMolSupplier(file)
 
-        # Ordenar archivos por nombre para asegurar orden correcto
-        mol2_files = sorted(mol2_files, key=lambda x: int(os.path.basename(x).split('_')[-1].replace('.mol2', '')))
+        for mol in supplier:
+            smiles = smiles = Chem.MolToSmiles(mol)
+            smiles_list.append(smiles)
 
-        for mol2_file in mol2_files:
-            pdbqt_file = os.path.join(folder, os.path.basename(mol2_file).replace('.mol2', '.pdbqt'))
-            subprocess.run(['./lib/obabel', '-imol2', mol2_file, '-opdbqt', '-O', pdbqt_file], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        for i, smile in enumerate(smiles_list):
+            subprocess.run(["./lib/obabel", "-:" + smile, "-omol2", "-O", real_folder + f'ligand_{i}.mol2', '--gen3d'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            sdf = real_folder + f'ligand_{i}.mol2'
+            pdbqt = real_folder + f'ligand_{i}.pdbqt'
+            subprocess.run(['./lib/obabel', '-imol2', sdf, '-opdbqt', '-O', pdbqt], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             self.contator += 1
-            yield pdbqt_file
-
-        for mol2_file in mol2_files:
-            os.remove(mol2_file)
+            os.remove(real_folder + f'ligand_{i}.mol2')
+            yield i
         
     def Maximum(self, file):
         list_molecules = []

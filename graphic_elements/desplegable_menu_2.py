@@ -29,7 +29,6 @@ class CustomButton(QPushButton):
 class DropdownWindow2(QWidget):
 
     button1Clicked = Signal()
-    button2Clicked = Signal()
 
     def __init__(self, main_window=None):
         super().__init__()
@@ -54,39 +53,33 @@ class DropdownWindow2(QWidget):
         layout = QVBoxLayout()
         
         button1 = CustomButton("Openbabel")
-        button2 = CustomButton("Prepare")
         
         
         layout.addWidget(button1)
-        layout.addWidget(button2)
         
         self.setLayout(layout)
-        self.resize(200, 150)  # Ajusta el tamaño de la ventana desplegable
+        self.resize(200, 150)
         
         self.main_window = main_window
         button1.clicked.connect(self.button1_clicked)
-        button2.clicked.connect(self.button2_clicked)
     
     def button1_clicked(self):
         self.button1Clicked.emit()
         self.close()
     
+
     def button2_clicked(self):
         self.button2Clicked.emit()
         self.close()
 
 
     def show(self, button):
-        # Obtener la posición del botón y ajustar la ventana desplegable
         button_rect = button.rect()
         button_pos = button.mapToGlobal(button_rect.bottomLeft())
-        
-        # Ajustar la posición para que la esquina superior izquierda de la ventana
-        # esté 10 píxeles por encima de la esquina inferior izquierda del botón
         adjusted_pos = QPoint(button_pos.x(), button_pos.y() - 10)
         
         self.move(adjusted_pos)
-        self.resize(button.width(), self.height())  # Establecer el ancho de la ventana desplegable al ancho del botón
+        self.resize(button.width(), self.height())
         super().show()
 
     def closeEvent(self, event):

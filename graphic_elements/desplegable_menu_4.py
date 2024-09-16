@@ -33,9 +33,6 @@ class DropdownWindow4(QWidget):
     button3Clicked = Signal()
     button4Clicked = Signal()
     button5Clicked = Signal()
-    button6Clicked = Signal()
-    button7Clicked = Signal()
-    button8Clicked = Signal()
 
     def __init__(self, main_window=None):
         super().__init__()
@@ -64,19 +61,13 @@ class DropdownWindow4(QWidget):
         button2 = CustomButton("VS: Best compounds")
         button3 = CustomButton("Interactions")
         button4 = CustomButton("Best 10")
-        button5 = CustomButton("PCA")
-        button6 = CustomButton("BBB A")
-        button7 = CustomButton("Swiss ADME")
-        button8 = CustomButton("Toxicity")
+        button5 = CustomButton("BBB A")
         
         layout.addWidget(button1)
         layout.addWidget(button2)
         layout.addWidget(button3)
         layout.addWidget(button4)
         layout.addWidget(button5)
-        layout.addWidget(button6)
-        layout.addWidget(button7)
-        layout.addWidget(button8)
         
         self.setLayout(layout)
         self.resize(200, 150)  # Ajusta el tamaño de la ventana desplegable
@@ -88,9 +79,6 @@ class DropdownWindow4(QWidget):
         button3.clicked.connect(self.button3_clicked)
         button4.clicked.connect(self.button4_clicked)
         button5.clicked.connect(self.button5_clicked)
-        button6.clicked.connect(self.button6_clicked)
-        button7.clicked.connect(self.button7_clicked)
-        button8.clicked.connect(self.button8_clicked)
     
     def button1_clicked(self):
         self.button1Clicked.emit()
@@ -112,18 +100,6 @@ class DropdownWindow4(QWidget):
         self.button5Clicked.emit()
         self.close()
     
-    def button6_clicked(self):
-        self.button6Clicked.emit()
-        self.close()
-    
-    def button7_clicked(self):
-        self.button7Clicked.emit()
-        self.close()
-    
-    def button8_clicked(self):
-        self.button8Clicked.emit()
-        self.close()
-
     def show(self, button):
         # Obtener la posición del botón y ajustar la ventana desplegable
         button_rect = button.rect()

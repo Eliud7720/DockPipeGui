@@ -12,6 +12,7 @@ from graphic_elements.MyCombo import CustomCombo
 from graphic_elements.up_buttons import CustomButton
 from graphic_elements.label_titles import CustomTitleLabel
 from graphic_elements.Line_edit import CustomLineEdit
+from graphic_elements.Dialog_for_receptors import CheckableOptionsDialog
 from codes import Create_pdbqt_by_smi_meeko
 from codes import Create_pdbqt_by_txt_meeko
 from codes import Create_pdbqt_by_sdf_meeko
@@ -28,7 +29,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # ------------------------- ESTABLISH THE MAIN ATTRIBUTES -------------------------"
+        # "------------------------- ESTABLISH THE MAIN ATTRIBUTES -------------------------"
 
 
         # Simulated clicks between windows
@@ -171,7 +172,6 @@ class MainWindow(QMainWindow):
 
         self.dropdown_2 = DropdownWindow2(self)
         self.dropdown_2.button1Clicked.connect(self.page_21_signal)
-        self.dropdown_2.button2Clicked.connect(self.page_22_signal)
 
 
         self.dropdown_3 = DropdownWindow3(self)
@@ -186,9 +186,6 @@ class MainWindow(QMainWindow):
         self.dropdown_4.button3Clicked.connect(self.page_43_signal)
         self.dropdown_4.button4Clicked.connect(self.page_44_signal)
         self.dropdown_4.button5Clicked.connect(self.page_45_signal)
-        self.dropdown_4.button6Clicked.connect(self.page_46_signal)
-        self.dropdown_4.button7Clicked.connect(self.page_47_signal)
-        self.dropdown_4.button8Clicked.connect(self.page_48_signal)
 
 
 
@@ -788,8 +785,27 @@ class MainWindow(QMainWindow):
                 Con = Create_protein_pdbqt_by_obabel.Conversions()
                 Con.Maximum(file_path)
                 bar.setMaximum(Con.maxim)
+                list_chains = []
+                
+                Con.get_proteins(file_path)
+                list_proteins = Con.proteins
 
-                for pdbqt_file in Con.conversions(file_path, folder_text):
+                for pdb_file in Con.Chains(file_path):
+                    list_chains.append(Con.chains)
+                
+                
+                generator = Con.conversions(file_path, folder_text)
+                for i, chain in enumerate(list_chains):
+                    if "B" in chain:
+                        dialog = CheckableOptionsDialog(chain, list_proteins[i], self)
+
+                        if dialog.exec():
+                            selected_options = dialog.get_checked_options()
+                            Con.selected_chains = selected_options
+                    else:
+                        Con.selected_chains = chain
+                    
+                    next(generator)
                     bar.setValue(Con.contator)
                 
 
@@ -1047,10 +1063,6 @@ class MainWindow(QMainWindow):
     def page_21_signal(self):
         self.main_stack.setCurrentIndex(1)
         self.page_2_stack.setCurrentIndex(0)
-    
-    def page_22_signal(self):
-        self.main_stack.setCurrentIndex(1)
-        self.page_2_stack.setCurrentIndex(1)
 
     def page_31_signal(self):
         self.main_stack.setCurrentIndex(2)
@@ -1083,18 +1095,6 @@ class MainWindow(QMainWindow):
     def page_45_signal(self):
         self.main_stack.setCurrentIndex(3)
         self.page_4_stack.setCurrentIndex(4)
-    
-    def page_46_signal(self):
-        self.main_stack.setCurrentIndex(3)
-        self.page_4_stack.setCurrentIndex(5)
-    
-    def page_47_signal(self):
-        self.main_stack.setCurrentIndex(3)
-        self.page_4_stack.setCurrentIndex(6)
-    
-    def page_48_signal(self):
-        self.main_stack.setCurrentIndex(3)
-        self.page_4_stack.setCurrentIndex(7)
 
 
        
