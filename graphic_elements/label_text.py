@@ -6,8 +6,9 @@ class CustomLabel(QLabel):
 
         self.setStyleSheet("""
             QLabel {
-                color: Black;
+                color: #424242;
                 font-family: 'Aptos';
                 font-size: 30px; 
+                font-weight: 600;
             }
         """)

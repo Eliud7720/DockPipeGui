@@ -36,10 +36,11 @@ class CustomTriangleButton(QPushButton):
                 color: #4c4c4c;
                 padding-top: 12px;
                 padding-bottom: 12px;
-                font-family: 'Aptos';
+                font-family: 'Arial';
                 font-size: 35px; 
                 background-color: white;
                 border-radius: 13px;
+                font-weight: 600;
             }
                            
             QPushButton:hover {

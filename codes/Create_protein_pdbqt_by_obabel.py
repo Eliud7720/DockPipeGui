@@ -37,7 +37,7 @@ class Conversions():
             
             yield
 
-    def conversions(self, ini_folder, des_folder):
+    def conversions(self, ini_folder, des_folder, save_ligands):
         ini_folder = ini_folder + "/"
         des_folder = des_folder + "/"
         os.makedirs(des_folder, exist_ok=True)
@@ -57,7 +57,6 @@ class Conversions():
             
             # Filtered list
             filtered_list = [item for i, item in enumerate(lines) if i not in num_line]
-            save_ligands = True
             chains_ligands = {}
             
             # Read chains

@@ -9,18 +9,19 @@ class CustomButton(QPushButton):
                 padding: 12px;
                 font-family: 'Aptos';
                 font-size: 35px; 
-                background-color: #00C0EC;
-                border-radius: 13px
+                background-color: #207c7a;
+                border-radius: 13px;
+                font-weight: 600;
             }
                            
             QPushButton:hover {
                 color: white;
-                background-color: #00B0D8; 
+                background-color: #106a69; 
             }
                            
             QPushButton:pressed {
                 color: white;
-                background-color: #0085A5;
+                background-color: #005958;
             }
         """)
 

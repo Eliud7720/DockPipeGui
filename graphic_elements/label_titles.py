@@ -11,6 +11,5 @@ class CustomTitleLabel(QLabel):
                 font-size: 35px;
                 font-weight: 700;
                 padding-bottom: 1px;
-                border-bottom: 1.5px solid black;
             }
         """)
