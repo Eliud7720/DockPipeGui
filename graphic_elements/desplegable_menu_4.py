@@ -57,11 +57,11 @@ class DropdownWindow4(QWidget):
         layout = QVBoxLayout()
         
         # Añadir algunos botones a la ventana desplegable
-        button1 = CustomButton("RMSD: redocking")
-        button2 = CustomButton("VS: Best compounds")
-        button3 = CustomButton("Interactions")
-        button4 = CustomButton("Best 10")
-        button5 = CustomButton("BBB A")
+        button1 = CustomButton("pdbqt split")
+        button2 = CustomButton("RMSD: Redocking")
+        button3 = CustomButton("Best compounds")
+        button4 = CustomButton("Interactions")
+        button5 = CustomButton("BBB")
         
         layout.addWidget(button1)
         layout.addWidget(button2)

@@ -21,6 +21,7 @@ from codes import Create_pdbqt_by_sdf_obabel
 from codes import Create_pdbqt_by_smi_obabel
 from codes import Create_protein_pdbqt_by_obabel
 from codes import Docking_with_smina
+from codes import Redocking_with_smina
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QSizePolicy, QProgressBar, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
 from PySide6.QtCore import Qt, QRegularExpression
@@ -43,7 +44,7 @@ class MainWindow(QMainWindow):
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.10") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.11") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -920,7 +921,7 @@ class MainWindow(QMainWindow):
         slayout = QHBoxLayout()
 
         # Validator for numbers
-        size_validator = QRegularExpressionValidator(QRegularExpression("^-?[0-9]*$"))
+        size_validator = QRegularExpressionValidator(QRegularExpression("^-?[0-9]*\\.?[0-9]+$"))
 
         # Labels for size and Coordinates
         XLab = CustomLabel("X: ")
@@ -1080,14 +1081,171 @@ class MainWindow(QMainWindow):
 
     def setup_page32(self):
 
+        # Create the layout
         layout = QVBoxLayout()
-        label = CustomLabel("Este es un QLabel en la Página 32")
-        CB = CustomCheckBox()
-        button = QPushButton("Este es un QPushButton en la Página 32") 
-        layout.addWidget(label)
-        layout.addWidget(CB)
-        layout.addWidget(button)
-        self.page_32.setLayout(layout) 
+
+        # Description label
+        des_label = CustomTitleLabel("REDOCKING WITH SMINA")
+
+        # Title layout
+        title_layout = QHBoxLayout()
+        TSL = QSpacerItem(10000, 10, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        TSR = QSpacerItem(10000, 10, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        
+        # Select protein
+        # File path
+        label_file = CustomLabel("Protein path: ")
+        label_file.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        label_file.setFixedHeight(30)
+
+        # File Label for path
+        label_path = CustomPathLabel("")
+
+        # Button for file path
+        Button_path = QPushButton("...")
+        Button_path.setFixedWidth(40)
+        Button_path.setFixedHeight(40)
+        Button_path.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", label_path))
+
+        # Horizontal layout
+        Hlayout = QHBoxLayout()
+
+        # File path
+        labelligand_file = CustomLabel("Ligand path: ")
+        labelligand_file.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        labelligand_file.setFixedHeight(30)
+
+        # File label for ligands path
+        ligands_path = CustomPathLabel("")
+
+        # Button for ligands path
+        Button_lpath = QPushButton("...")
+        Button_lpath.setFixedWidth(40)
+        Button_lpath.setFixedHeight(40)
+        Button_lpath.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", ligands_path))
+
+        # Horizontal ligand layout
+        hligandlayout = QHBoxLayout()
+
+        # Name folder
+        # Line Edit
+        TextLE = CustomLabel("Name folder: ")
+        MyLE = CustomLineEdit()
+        validator = QRegularExpressionValidator(QRegularExpression("^[A-Za-z ]*$"))
+        MyLE.setValidator(validator)
+
+        # Horizontal size layout
+        slayout = QHBoxLayout()
+
+        # Validator for numbers
+        size_validator = QRegularExpressionValidator(QRegularExpression("^-?[0-9]*\\.?[0-9]+$"))
+
+
+        # Label of Combo Box
+        label_combo = CustomLabel("Scoring: ")
+        label_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        
+        # ComboBox
+        Combo = CustomCombo()
+        Combo.addItem("Vina")
+        Combo.addItem("Vinardo")
+        Combo.addItem("Dkoes")
+        Combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        FFS2 = QSpacerItem(1000, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # PushButton
+        PButton = CustomButton("Convert")
+        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_32(label_path, ligands_path, MyLE, ProgresBar, Combo))
+        PButton.setFixedWidth(300)
+
+        # Progress Bar
+        ProgresBar = QProgressBar()
+        ProgresBar.setFixedHeight(50)
+
+        # Convert layout
+        Clayout = QHBoxLayout()
+        CSL = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        CSR = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+
+        # Bottom Spacer
+        spacer_bottom = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        #  ------------------------- Add Items -------------------------
+
+        # Add the title
+        title_layout.addItem(TSL)
+        title_layout.addWidget(des_label)
+        title_layout.addItem(TSR)
+        layout.addItem(title_layout)
+        layout.addSpacing(20)
+
+        # Add protein label path
+        layout.addWidget(label_file)
+        Hlayout.addWidget(label_path)
+        Hlayout.addWidget(Button_path)
+        layout.addItem(Hlayout)
+        layout.addSpacing(20)
+
+        # Add ligand label path
+        layout.addWidget(labelligand_file)
+        hligandlayout.addWidget(ligands_path)
+        hligandlayout.addWidget(Button_lpath)
+        layout.addItem(hligandlayout)
+        layout.addSpacing(20)
+
+        # Add the line edit
+        layout.addWidget(TextLE)
+        layout.addWidget(MyLE)
+        layout.addSpacing(40)
+
+        # Add Combo
+        HCombolayout = QHBoxLayout()
+        HCombolayout.addWidget(label_combo)
+        HCombolayout.addWidget(Combo)
+        HCombolayout.addItem(FFS2)
+        layout.addItem(HCombolayout)
+
+
+        # Horizontal layout for the button
+        Clayout.addItem(CSL)
+        Clayout.addWidget(PButton)
+        Clayout.addItem(CSR)
+        layout.addItem(Clayout)
+
+        # Progress bar and bottom
+        layout.addSpacing(20)
+        layout.addWidget(ProgresBar)
+        layout.addItem(spacer_bottom)
+
+        # Add bottom spacer
+        layout.addItem(spacer_bottom)
+
+        # Set layout
+        self.page_32.setLayout(layout)
+
+    def conversion_to_pdbqt_32(self, protein_label, ligand_label, folder_LineEdit, bar, combo):
+        
+        # Recovery the text
+        protein_path = protein_label.text()
+        ligand_path = ligand_label.text()
+        folder_text = folder_LineEdit.text() if folder_LineEdit.text() != "" else "Redocking files"
+        combo_index = combo.currentIndex()
+
+        if os.path.isfile(protein_path) and os.path.isfile(ligand_path):
+            
+            try:
+                Con = Redocking_with_smina.Conversions()
+                Con.Maximum(ligand_path)
+                bar.setMaximum(Con.maxim)
+
+                Con.conversions(protein_path, ligand_path, folder_text, combo_index)
+                bar.setValue(Con.contator)
+
+            except Exception as e:
+                QMessageBox.critical(self, "Error 3_1-2", e)
+            
+        else:
+            QMessageBox.critical(self, "Error 3_1-1", "Make sure to fill in all fields.")
 
     def setup_page33(self):
 

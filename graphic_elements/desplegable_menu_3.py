@@ -57,8 +57,8 @@ class DropdownWindow3(QWidget):
         
         # Añadir algunos botones a la ventana desplegable
         button1 = CustomButton("Docking")
-        button2 = CustomButton("Consensus docking")
-        button3 = CustomButton("Virtual Screening")
+        button2 = CustomButton("Redocking")
+        button3 = CustomButton("Consensus docking")
         
         
         layout.addWidget(button1)

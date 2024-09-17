@@ -97,7 +97,16 @@ class Conversions():
                             file.write("END")
 
                         # Convert the .pdb file to .pdbqt using OpenBabel
-                        result = subprocess.run(["./lib/obabel", "-i", "pdb", pdb_file, "-xr", "-opdbqt", '-O', pdbqt_file], check=True, capture_output=True, text=True)
+                        result = subprocess.run(["./lib/obabel", "-i", "pdb", pdb_file, "-xr", "-opdbqt", '-O', pdbqt_file, "-p", "7.0", "--partialcharge", "gasteiger"], check=True, capture_output=True, text=True)
+
+                        with open(pdbqt_file, 'r') as file:
+                            lines = file.readlines()
+                            lines.insert(0, "ROOT\n")
+                            lines.insert(-1, "ENDROOT\n")
+                            lines.insert(-1, "TORSDOF 0\n")
+                        
+                        with open(pdbqt_file, 'w') as file:
+                            file.writelines(lines)
 
                         # Remove the original .pdb file after conversion
                         os.remove(pdb_file)
@@ -114,7 +123,7 @@ class Conversions():
             io.save(temp_pdb, select=ChainSelect(self.selected_chains))
 
             final_name = des_folder + os.path.basename(os.path.splitext(pdb)[0]) + ".pdbqt"
-            subprocess.run(["./lib/obabel", "-i", "pdb", temp_pdb, "-xr", "-opdbqt", "-O", final_name], capture_output=True, text=True)
+            result = subprocess.run(["./lib/obabel", "-i", "pdb", temp_pdb, "-xr", "-opdbqt", "-O", final_name, "--partialcharge", "gasteiger"], capture_output=True, text=True)
             
             os.remove(temp_pdb)
 

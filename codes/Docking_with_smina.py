@@ -41,7 +41,7 @@ class Conversions():
                 ]
             
             # Ejecuta el comando
-            result = subprocess.run(command, capture_output=True, text=True)
+            subprocess.run(command, capture_output=True, text=True)
 
             self.contator +=1 
             yield
