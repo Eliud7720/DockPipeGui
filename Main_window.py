@@ -20,6 +20,7 @@ from codes import Create_pdbqt_by_txt_obabel
 from codes import Create_pdbqt_by_sdf_obabel
 from codes import Create_pdbqt_by_smi_obabel
 from codes import Create_protein_pdbqt_by_obabel
+from codes import Docking_with_smina
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QSizePolicy, QProgressBar, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
 from PySide6.QtCore import Qt, QRegularExpression
@@ -42,7 +43,7 @@ class MainWindow(QMainWindow):
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.8") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.10") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -469,11 +470,11 @@ class MainWindow(QMainWindow):
 
     def get_file_filter_11(self, combo):
         if combo.currentIndex() == 0:
-            return "smi files (*.smi);;All files (*);;"
+            return "smi files (*.smi);;All files (*)"
         elif combo.currentIndex() == 1:
-            return "sdf files (*.sdf);;All files (*);;"
+            return "sdf files (*.sdf);;All files (*)"
         elif combo.currentIndex() == 2:
-            return "txt files (*.txt);;All files (*);;"
+            return "txt files (*.txt);;All files (*)"
 
 
 
@@ -643,11 +644,11 @@ class MainWindow(QMainWindow):
 
     def get_file_filter_12(self, combo):
         if combo.currentIndex() == 0:
-            return "smi files (*.smi);;All files (*);;"
+            return "smi files (*.smi);;All files (*)"
         elif combo.currentIndex() == 1:
-            return "sdf files (*.sdf);;All files (*);;"
+            return "sdf files (*.sdf);;All files (*)"
         elif combo.currentIndex() == 2:
-            return "txt files (*.txt);;All files (*);;"
+            return "txt files (*.txt);;All files (*)"
 
 
     # *************************************** PAGE 2 ***************************************
@@ -886,7 +887,7 @@ class MainWindow(QMainWindow):
         Button_path = QPushButton("...")
         Button_path.setFixedWidth(40)
         Button_path.setFixedHeight(40)
-        Button_path.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*);;", label_path))
+        Button_path.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", label_path))
 
         # Horizontal layout
         Hlayout = QHBoxLayout()
@@ -925,9 +926,9 @@ class MainWindow(QMainWindow):
         XLab = CustomLabel("X: ")
         YLab = CustomLabel("Y: ")
         ZLab = CustomLabel("Z: ")
-        X_SLab = CustomLabel("s_X: ")
-        Y_SLab = CustomLabel("s_Y: ")
-        Z_SLab = CustomLabel("s_Z: ")
+        X_SLab = CustomLabel("sX: ")
+        Y_SLab = CustomLabel("sY: ")
+        Z_SLab = CustomLabel("sZ: ")
 
         # Line edits for size and Coordinates
         XLE = CustomLineEdit()
@@ -957,7 +958,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_31(label_path, ProgresBar, MyLE, MyCheck))
+        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_31(label_path, ligands_path, MyLE, XLE, YLE, ZLE, X_SLE, Y_SLE, Z_SLE, ProgresBar, Combo))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -1046,17 +1047,36 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_31.setLayout(layout) 
 
-    def conversion_to_pdbqt_12(self, label, bar, combo, LineEdit):
+    def conversion_to_pdbqt_31(self, protein_label, ligand_label, folder_LineEdit, X_LE, Y_LE, Z_LE, XS_LE, YS_LE, ZS_LE, bar, combo):
         
-        file_path = label.text()
-        folder_path = "yes"
-        folder_text = LineEdit.text() if LineEdit.text() != "" else "PDBQT files"
+        # Recovery the text
+        protein_path = protein_label.text()
+        ligand_path = ligand_label.text()
+        folder_text = folder_LineEdit.text() if folder_LineEdit.text() != "" else "Docking files"
+        X = X_LE.text()
+        Y = Y_LE.text()
+        Z = Z_LE.text()
+        XS = XS_LE.text()
+        YS = YS_LE.text()
+        ZS = ZS_LE.text()
+        combo_index = combo.currentIndex()
 
-        if os.path.isfile(file_path):
-            pass
+        if os.path.isfile(protein_path) and os.path.isdir(ligand_path) and X and Y and Z and XS and YS and ZS:
+            
+            try:
+                Con = Docking_with_smina.Conversions()
+                Con.Maximum(ligand_path)
+                bar.setMaximum(Con.maxim)
+
+                for ligand in Con.conversions(protein_path, ligand_path, folder_text, X, Y, Z, XS, YS, ZS, combo_index):
+                    bar.setValue(Con.contator)
+
+            except Exception as e:
+                QMessageBox.critical(self, "Error 3_1-2", e)
             
         else:
-            QMessageBox.critical(self, "Error 3_1-1", "Please, introduce a correct file path.")
+            QMessageBox.critical(self, "Error 3_1-1", "Make sure to fill in all fields.")
+
 
     def setup_page32(self):
 

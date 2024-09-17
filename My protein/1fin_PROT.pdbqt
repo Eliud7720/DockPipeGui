@@ -1,4 +1,4 @@
-REMARK  Name = /home/eliudaguilar/proyecto_acoplamiento/proteins/1fin_PROT.pdb
+REMARK  Name = /home/eliudaguilar/proyecto_acoplamiento/proteins/1fin_PROT.pdb_temp
 REMARK                            x       y       z     vdW  Elec       q    Type
 REMARK                         _______ _______ _______ _____ _____    ______ ____
 ATOM      1  N   MET     1     -14.517 190.105 102.118  0.00  0.00    +0.000 N 
