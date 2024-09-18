@@ -22,6 +22,16 @@ class Conversions():
         elif score == 2:
             score = "dkoes"
 
+        with open(des_folder + "config.txt", "w") as file:
+            file.write("----------Configuration employeed----------")
+            file.write(f"Scoring: {score}\n")
+            file.write(f"Center_X: {x}\n")
+            file.write(f"Center_y: {y}\n")
+            file.write(f"Center_z: {z}\n")
+            file.write(f"size_x: {sx}\n")
+            file.write(f"size_y: {sy}\n")
+            file.write(f"size_z: {sz}")
+
         for ligand in ligands_files:
             basename = os.path.basename(ligand).split(".")[0]
 
