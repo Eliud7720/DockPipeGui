@@ -20,10 +20,10 @@ class Conversions():
         elif score == 1:
             score = "vinardo"
         elif score == 2:
-            score = "dkoes"
+            score = "dkoes_fast"
 
         with open(des_folder + "config.txt", "w") as file:
-            file.write("----------Configuration employeed----------")
+            file.write("----------Configuration employeed----------\n")
             file.write(f"Scoring: {score}\n")
             file.write(f"Center_X: {x}\n")
             file.write(f"Center_y: {y}\n")
@@ -59,7 +59,6 @@ class Conversions():
     
     def Maximum(self, ligands_folder):
         ligands_folder = ligands_folder + "/"
-        print(ligands_folder)
         pdbs_files = glob.glob(ligands_folder + '*.pdbqt')
         self.maxim = len(pdbs_files)
 

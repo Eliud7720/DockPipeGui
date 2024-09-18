@@ -1,6 +1,5 @@
 import subprocess
 import os
-import glob
 
 class Conversions():
     def __init__(self):
@@ -11,8 +10,8 @@ class Conversions():
         des_folder = folder_text + "/"
         os.makedirs(des_folder, exist_ok=True)
 
-        new_1 = des_folder + os.path.basename(file_1).split(".")[0] + ".sdf"
-        new_2 = des_folder + os.path.basename(file_2).split(".")[0] + ".sdf"
+        new_1 = des_folder + os.path.basename(file_1).split(".")[0] + ".mol2"
+        new_2 = des_folder + os.path.basename(file_2).split(".")[0] + ".mol2"
 
         command_1 = [
         './lib/obabel', 
@@ -33,8 +32,8 @@ class Conversions():
 
         with open(des_folder + "Results.txt", "w") as f:
             f.write(result3.stdout)
-
-
+        
+        self.contator +=1 
     
     def Maximum(self,):
         self.maxim = 1

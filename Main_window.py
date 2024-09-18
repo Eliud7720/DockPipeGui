@@ -24,8 +24,9 @@ from codes import Docking_with_smina
 from codes import Redocking_with_smina
 from codes import Convert_pdbqt_to_mol2
 from codes import Calculate_RMSD
+from codes import Best_screening
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QSizePolicy, QProgressBar, QFileDialog, QMessageBox
-from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
+from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator, QIntValidator, QDoubleValidator
 from PySide6.QtCore import Qt, QRegularExpression
 
 
@@ -567,6 +568,7 @@ class MainWindow(QMainWindow):
         layout.addSpacing(50)
 
         # Horizontal label path and button path layout
+        layout.addWidget(label_file)
         Hlayout.addWidget(label_path)
         Hlayout.addWidget(Button_path)
         layout.addItem(Hlayout)
@@ -960,7 +962,7 @@ class MainWindow(QMainWindow):
         FFS2 = QSpacerItem(1000, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # PushButton
-        PButton = CustomButton("Convert")
+        PButton = CustomButton("Do docking")
         PButton.clicked.connect(lambda: self.conversion_to_pdbqt_31(label_path, ligands_path, MyLE, XLE, YLE, ZLE, X_SLE, Y_SLE, Z_SLE, ProgresBar, Combo))
         PButton.setFixedWidth(300)
 
@@ -1156,7 +1158,7 @@ class MainWindow(QMainWindow):
         FFS2 = QSpacerItem(1000, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # PushButton
-        PButton = CustomButton("Convert")
+        PButton = CustomButton("Do docking")
         PButton.clicked.connect(lambda: self.conversion_to_pdbqt_32(label_path, ligands_path, MyLE, ProgresBar, Combo))
         PButton.setFixedWidth(300)
 
@@ -1582,6 +1584,7 @@ class MainWindow(QMainWindow):
                 bar.setMaximum(Con.maxim)
 
                 Con.conversions(file_1, file_2, folder_text)
+                bar.setValue(Con.contator)
 
 
             except Exception as e:
@@ -1592,14 +1595,171 @@ class MainWindow(QMainWindow):
     
     def setup_page43(self):
 
+        #  ------------- Create items -------------
+
+        # Create the layout
         layout = QVBoxLayout()
-        label = CustomLabel("Este es un QLabel en la Página 43")
-        CB = CustomCheckBox()
-        button = QPushButton("Este es un QPushButton en la Página 43") 
-        layout.addWidget(label)
-        layout.addWidget(CB)
-        layout.addWidget(button)
+
+        # Description label
+        des_label = CustomTitleLabel("BEST COMPOUNDS")
+
+        # Title layout
+        title_layout = QHBoxLayout()
+        TSL = QSpacerItem(10000, 10, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        TSR = QSpacerItem(10000, 10, QSizePolicy.Maximum, QSizePolicy.Maximum)
+
+        # Label of Combo Box
+        label_combo = CustomLabel("Filter method: ")
+        label_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        
+        # ComboBox
+        Combo = CustomCombo()
+        Combo.addItem("Best compounds")
+        Combo.addItem("Cutting Interval")
+        Combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        Combo.currentIndexChanged.connect(lambda: self.Index_changed_43(NumberLA, NumberLE, Combo))
+        FFS2 = QSpacerItem(1000, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # Line Edit for numbers
+        NumberLA = CustomLabel("Amount of compounds: ")
+        NumberLE = CustomLineEdit()
+        NumberLE.setFixedWidth(200)
+        validator = QIntValidator(0, 999999)
+        NLES = QSpacerItem(100, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        NumberLE.setValidator(validator)
+
+        # File path
+        label_file = CustomLabel("File folder: ")
+        label_file.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        label_file.setFixedHeight(30)
+
+        # File Label for path
+        label_path = CustomPathLabel("")
+
+        # Button for file path
+        Button_path = QPushButton("...")
+        Button_path.setFixedWidth(40)
+        Button_path.setFixedHeight(40)
+        Button_path.clicked.connect(lambda: self.open_folder_dialog(label_path))
+
+        # Horizontal layout
+        Hlayout = QHBoxLayout()
+
+        # Line Edit
+        TextLE = CustomLabel("Name folder: ")
+        MyLE = CustomLineEdit()
+        validator = QRegularExpressionValidator(QRegularExpression("^[A-Za-z ]*$"))
+        MyLE.setValidator(validator)
+
+        # PushButton
+        PButton = CustomButton("Convert")
+        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_43(NumberLE, label_path, MyLE, Combo, ProgresBar))
+        PButton.setFixedWidth(300)
+
+        # Progress Bar
+        ProgresBar = QProgressBar()
+        ProgresBar.setFixedHeight(50)
+
+        # Convert layout
+        Clayout = QHBoxLayout()
+        CSL = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        CSR = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        
+        # Bottom Spacer
+        spacer_bottom = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+
+        #  ------------- Add Items -------------
+        
+        # Add title
+        title_layout.addItem(TSL)
+        title_layout.addWidget(des_label)
+        title_layout.addItem(TSR)
+        layout.addItem(title_layout)
+
+        # Add Combo
+        HCombolayout = QHBoxLayout()
+        layout.addSpacing(20)
+        HCombolayout.addWidget(label_combo)
+        HCombolayout.addWidget(Combo)
+        HCombolayout.addItem(FFS2)
+        layout.addItem(HCombolayout)
+        layout.addSpacing(30)
+
+        # Add number LE and LA
+        HComboNlayout = QHBoxLayout()
+        HComboNlayout.addWidget(NumberLA)
+        HComboNlayout.addWidget(NumberLE)
+        HComboNlayout.addItem(NLES)
+        layout.addItem(HComboNlayout)
+        layout.addSpacing(30)
+
+
+        # Horizontal label path and button path layout
+        layout.addWidget(label_file)
+        Hlayout.addWidget(label_path)
+        Hlayout.addWidget(Button_path)
+        layout.addItem(Hlayout)
+        layout.addSpacing(30)
+
+
+        # Add the line edit
+        layout.addWidget(TextLE)
+        layout.addWidget(MyLE)
+        layout.addSpacing(30)
+        
+        # Horizontal layout for the button
+        Clayout.addItem(CSL)
+        Clayout.addWidget(PButton)
+        Clayout.addItem(CSR)
+        layout.addItem(Clayout)
+
+        # Progress bar and bottom
+        layout.addSpacing(20)
+        layout.addWidget(ProgresBar)
+        layout.addItem(spacer_bottom)
+
+        
+        # Set layout and final spacer
+        layout.addItem(spacer_bottom)
         self.page_43.setLayout(layout)
+    
+    def conversion_to_pdbqt_43(self, NLE, logs_folder, des_folder, Combo, bar):
+        
+        # Recovery the text
+        NLE = NLE.text()
+        logs = logs_folder.text()
+        folder_text = des_folder.text() if des_folder.text() != "" else "Screening folder"
+        index = Combo.currentIndex()
+
+        if os.path.isdir(logs) and NLE != "":
+            
+            try:
+                Con = Best_screening.Conversions()
+                Con.Maximum(logs)
+                bar.setMaximum(Con.maxim)
+
+                for log in Con.conversions(NLE, logs, folder_text, index):
+                    bar.setValue(Con.contator)
+
+            except Exception as e:
+                QMessageBox.critical(self, "Error 4_3-2", e)
+            
+        else:
+            QMessageBox.critical(self, "Error 4_3-2", "Please fill in all fields")
+    
+    def Index_changed_43(self, LA, LE, combo):
+        
+        if combo.currentIndex() == 0:
+            LE.setText("0")
+            LA.setText("Amount of compunds: ")
+            Validator = QIntValidator(0, 999999)
+            LE.setValidator(Validator)
+        elif combo.currentIndex() == 1:
+            LE.setText("0")
+            LA.setText("Cutting interval: ")
+            Validator = QDoubleValidator()
+            LE.setValidator(Validator)
     
     def setup_page44(self):
 
