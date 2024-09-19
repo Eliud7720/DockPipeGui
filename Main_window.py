@@ -25,6 +25,8 @@ from codes import Redocking_with_smina
 from codes import Convert_pdbqt_to_mol2
 from codes import Calculate_RMSD
 from codes import Best_screening
+from codes import Consensus_model_for_smi
+from codes import Consensus_model_for_txt
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QSizePolicy, QProgressBar, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator, QIntValidator, QDoubleValidator
 from PySide6.QtCore import Qt, QRegularExpression
@@ -47,7 +49,7 @@ class MainWindow(QMainWindow):
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.12.") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.14.") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -1746,7 +1748,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "Error 4_3-2", e)
             
         else:
-            QMessageBox.critical(self, "Error 4_3-2", "Please fill in all fields")
+            QMessageBox.critical(self, "Error 4_3-1", "Please fill in all fields")
     
     def Index_changed_43(self, LA, LE, combo):
         
@@ -1763,14 +1765,164 @@ class MainWindow(QMainWindow):
     
     def setup_page44(self):
 
+        #  ------------- Create items -------------
+
+        # Create the layout
         layout = QVBoxLayout()
-        label = CustomLabel("Este es un QLabel en la Página 44")
-        CB = CustomCheckBox()
-        button = QPushButton("Este es un QPushButton en la Página 44") 
-        layout.addWidget(label)
-        layout.addWidget(CB)
-        layout.addWidget(button)
+
+        # Description label
+        des_label = CustomTitleLabel("PREDICT BBB")
+
+        # Title layout
+        title_layout = QHBoxLayout()
+        TSL = QSpacerItem(10000, 10, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        TSR = QSpacerItem(10000, 10, QSizePolicy.Maximum, QSizePolicy.Maximum)
+
+        # Label of Combo Box
+        label_combo = CustomLabel("File Format: ")
+        label_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        
+        # ComboBox
+        Combo = CustomCombo()
+        Combo.addItem("smi format")
+        Combo.addItem("txt format")
+        Combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        FFS2 = QSpacerItem(1000, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # File path
+        label_file = CustomLabel("File Path: ")
+        label_file.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        label_file.setFixedHeight(30)
+
+        # File Label for path
+        label_path = CustomPathLabel("")
+
+        # Button for file path
+        Button_path = QPushButton("...")
+        Button_path.setFixedWidth(40)
+        Button_path.setFixedHeight(40)
+        Button_path.clicked.connect(lambda: self.open_file_dialog(self.get_file_filter_44(Combo), label_path))
+
+        # Horizontal layout
+        Hlayout = QHBoxLayout()
+
+        # Line Edit
+        TextLE = CustomLabel("Name folder: ")
+        MyLE = CustomLineEdit()
+        validator = QRegularExpressionValidator(QRegularExpression("^[A-Za-z ]*$"))
+        MyLE.setValidator(validator)
+
+        # PushButton
+        PButton = CustomButton("Predict")
+        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_44(label_path, MyLE, Combo, ProgresBar))
+        PButton.setFixedWidth(300)
+
+        # Progress Bar
+        ProgresBar = QProgressBar()
+        ProgresBar.setFixedHeight(50)
+
+        # Convert layout
+        Clayout = QHBoxLayout()
+        CSL = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        CSR = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        
+        # Bottom Spacer
+        spacer_bottom = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+
+        #  ------------- Add Items -------------
+        
+        # Add title
+        title_layout.addItem(TSL)
+        title_layout.addWidget(des_label)
+        title_layout.addItem(TSR)
+        layout.addItem(title_layout)
+
+        # Add Combo
+        HCombolayout = QHBoxLayout()
+        layout.addSpacing(100)
+        HCombolayout.addWidget(label_combo)
+        HCombolayout.addWidget(Combo)
+        HCombolayout.addItem(FFS2)
+        layout.addItem(HCombolayout)
+        layout.addSpacing(50)
+
+        # Horizontal label path and button path layout
+        layout.addWidget(label_file)
+        Hlayout.addWidget(label_path)
+        Hlayout.addWidget(Button_path)
+        layout.addItem(Hlayout)
+        layout.addSpacing(50)
+
+        # Add the line edit
+        layout.addWidget(TextLE)
+        layout.addWidget(MyLE)
+        layout.addSpacing(50)
+        
+        # Horizontal layout for the button
+        Clayout.addItem(CSL)
+        Clayout.addWidget(PButton)
+        Clayout.addItem(CSR)
+        layout.addItem(Clayout)
+
+        # Progress bar and bottom
+        layout.addSpacing(20)
+        layout.addWidget(ProgresBar)
+        layout.addItem(spacer_bottom)
+
+        
+        # Set layout and final spacer
+        layout.addItem(spacer_bottom)
         self.page_44.setLayout(layout)
+    
+    def conversion_to_pdbqt_44(self, file_path, des_folder, Combo, bar):
+
+        file_path = file_path.text()
+        folder_text = des_folder.text() if des_folder.text() != "" else "BBB predictions"
+        Combo = Combo.currentIndex()
+        
+
+        if os.path.isfile(file_path):
+            
+            if Combo == 0:
+                try:
+                    Con = Consensus_model_for_smi.Conversions()
+                    Con.Maximum(file_path)
+                    bar.setMaximum(Con.maxim)
+
+                    try:
+                        for smile in Con.conversions(file_path, folder_text):
+                            bar.setValue(Con.contator)
+                    except Exception as e:
+                        QMessageBox.critical(self, "Error 4_4-4", str(e))                 
+                    
+                except Exception as e:
+                    QMessageBox.critical(self, "Error 4_4-5", e)
+
+            
+            elif Combo == 1:
+                try:
+                    Con = Consensus_model_for_txt.Conversions()
+                    Con.Maximum(file_path)
+                    bar.setMaximum(Con.maxim)
+
+                    try:
+                        for smile in Con.conversions(file_path, folder_text):
+                            bar.setValue(Con.contator)
+                    except Exception as e:
+                        QMessageBox.critical(self, "Error 4_4-3", str(e))                 
+                    
+                except Exception as e:
+                    QMessageBox.critical(self, "Error 4_4-2", e)
+            
+        else:
+            QMessageBox.critical(self, "Error 4_4-2", "Please fill in all fields")
+
+    def get_file_filter_44(self, combo):
+        if combo.currentIndex() == 0:
+            return "smi files (*.smi);;All files (*)"
+        elif combo.currentIndex() == 1:
+            return "txt files (*.txt);;All files (*)"
     
     def setup_page45(self):
 
@@ -1839,8 +1991,6 @@ class MainWindow(QMainWindow):
         # Set the folder path
         label.setText(folder_path)
 
-
-    
     # ------------------------- ESTABLISH THE PAGES DIRECTIONS -------------------------"
 
     def page_11_signal(self):

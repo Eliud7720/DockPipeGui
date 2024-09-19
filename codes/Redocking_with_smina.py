@@ -30,7 +30,8 @@ class Conversions():
         
         for i, line in enumerate(lines):
             if i > 3 and i < len(lines)-3:
-                xyz_list.append([line.split()[6], line.split()[7], line.split()[8]])
+                line = line[30:]
+                xyz_list.append([line.split()[0], line.split()[1], line.split()[2]])
         
         array = np.array(xyz_list)
         data_array = np.array(array, dtype=float)
@@ -38,6 +39,16 @@ class Conversions():
         geometric_center = np.mean(data_array, axis=0)
 
         basename = os.path.basename(ligand).split(".")[0]
+
+        with open(des_folder + "config.txt", "w") as file:
+            file.write("----------Configuration employeed----------\n")
+            file.write(f"Scoring: {score}\n")
+            file.write(f"Center_X: {round(geometric_center[0], 2)}\n")
+            file.write(f"Center_y: {round(geometric_center[1], 2)}\n")
+            file.write(f"Center_z: {round(geometric_center[2], 2)}\n")
+            file.write(f"size_x: 20\n")
+            file.write(f"size_y: 20\n")
+            file.write(f"size_z: 20")
 
         command = [
             './lib/smina',

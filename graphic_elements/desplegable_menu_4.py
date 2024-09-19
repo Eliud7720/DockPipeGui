@@ -60,8 +60,8 @@ class DropdownWindow4(QWidget):
         button1 = CustomButton("pdbqt split")
         button2 = CustomButton("RMSD: Redocking")
         button3 = CustomButton("Best compounds")
-        button4 = CustomButton("Interactions")
-        button5 = CustomButton("BBB")
+        button4 = CustomButton("BBB")
+        button5 = CustomButton("Interactions")
         
         layout.addWidget(button1)
         layout.addWidget(button2)

@@ -75,16 +75,18 @@ class Conversions():
                 # Dictionary for storing ligands by chain
                 chains_ligands = {}
 
-                for chain in temporal_chains:
-                    # We filter the ligands corresponding to each chain without modifying the original list.
-                    ligands_for_chain = [line for line in ligands if line.split()[4] == chain]
-                    chains_ligands[chain] = ligands_for_chain
+                for line in ligands:
+                    if line.split()[4] not in chains_ligands.keys():
+                        chains_ligands[line.split()[4]] = []
+
+                    chains_ligands[line.split()[4]].append(line)
 
                 # Save the ligands files in separated files and convert to pdbqt
                 for key, value in chains_ligands.items():
                     if value:
                         pdb_file = ligands_folder + os.path.basename(pdb).split(".")[0] + "_ligand_" + key + ".pdb"
                         pdbqt_file = ligands_folder + os.path.basename(pdb).split(".")[0] + "_ligand_" + key + ".pdbqt"
+
 
                         # Save the ligands in .pdb format
                         with open(pdb_file, "w") as file:

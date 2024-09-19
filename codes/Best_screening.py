@@ -53,17 +53,15 @@ class Conversions():
         df.sort_values(by="score", inplace=True, ascending=False)
         
         if index == 0:
+            df.sort_values(by="score", inplace=True, ascending=True)
             df = df.head(int(Number)).copy()
         elif index == 1:
             df = df[df["score"] < float(Number)].copy()
+            df.sort_values(by="score", inplace=True, ascending=True)
 
-        df.sort_values(by="score", inplace=True, ascending=True)
+        
         df.to_csv(des_folder + "my_df.csv", index=False)
         
-
-
-
-
 
     def Maximum(self, logs):
         logs = logs + "/"
