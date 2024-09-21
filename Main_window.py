@@ -27,6 +27,7 @@ from codes import Calculate_RMSD
 from codes import Best_screening
 from codes import Consensus_model_for_smi
 from codes import Consensus_model_for_txt
+from codes import Interactions
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QStackedWidget, QPushButton, QSpacerItem, QSizePolicy, QProgressBar, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator, QIntValidator, QDoubleValidator
 from PySide6.QtCore import Qt, QRegularExpression
@@ -49,7 +50,7 @@ class MainWindow(QMainWindow):
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.14.") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.15.") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -184,7 +185,6 @@ class MainWindow(QMainWindow):
         self.dropdown_3 = DropdownWindow3(self)
         self.dropdown_3.button1Clicked.connect(self.page_31_signal)
         self.dropdown_3.button2Clicked.connect(self.page_32_signal)
-        self.dropdown_3.button3Clicked.connect(self.page_33_signal)
 
 
         self.dropdown_4 = DropdownWindow4(self)
@@ -433,6 +433,7 @@ class MainWindow(QMainWindow):
                     maxim = Create_pdbqt_by_smi_meeko.Maximum()
                     maxim.contar_maximo(label.text())
                     bar.setMaximum(maxim.maximo)
+                    bar.setValue(0)
                     
                     for current_count, _, _ in Con.conversion(file_path, folder_text):
                         bar.setValue(current_count)
@@ -444,10 +445,9 @@ class MainWindow(QMainWindow):
                 try:
                     Con = Create_pdbqt_by_sdf_meeko.Conversions()
                     maxim = Create_pdbqt_by_sdf_meeko.Maximum()
-
                     maxim.contar_maximo(label.text())
-
                     bar.setMaximum(maxim.maximo)
+                    bar.setValue(0)
                     
                     for current_count, _, _ in Con.conversion(file_path, folder_text):
                         bar.setValue(current_count)
@@ -459,10 +459,9 @@ class MainWindow(QMainWindow):
                 try:
                     Con = Create_pdbqt_by_txt_meeko.Conversions()
                     maxim = Create_pdbqt_by_txt_meeko.Maximum()
-
                     maxim.contar_maximo(label.text())
-
                     bar.setMaximum(maxim.maximo)
+                    bar.setValue(0)
                     
                     for current_count, _, _ in Con.conversion(file_path, folder_text):
                         bar.setValue(current_count)
@@ -610,6 +609,7 @@ class MainWindow(QMainWindow):
                     Con = Create_pdbqt_by_smi_obabel.Conversions()
                     Con.Maximum(label.text())
                     bar.setMaximum(Con.maxim)
+                    bar.setValue(0)
 
                     for pdbqt_file in Con.conversions(folder_text, file_path):
                         bar.setValue(Con.contator)
@@ -622,6 +622,7 @@ class MainWindow(QMainWindow):
                     Con = Create_pdbqt_by_sdf_obabel.Conversions()
                     Con.Maximum(label.text())
                     bar.setMaximum(Con.maxim)
+                    bar.setValue(0)
                     
                     
                     for pdbqt_file in Con.conversions(folder_text, file_path):
@@ -638,6 +639,7 @@ class MainWindow(QMainWindow):
                     Con = Create_pdbqt_by_txt_obabel.Conversions()
                     Con.Maximum(label.text())
                     bar.setMaximum(Con.maxim)
+                    bar.setValue(0)
 
                     for pdbqt_file in Con.conversions(folder_text, file_path):
                         bar.setValue(Con.contator)
@@ -805,6 +807,7 @@ class MainWindow(QMainWindow):
                 Con = Create_protein_pdbqt_by_obabel.Conversions()
                 Con.Maximum(file_path)
                 bar.setMaximum(Con.maxim)
+                bar.setValue(0)
                 list_chains = []
                 
                 Con.get_proteins(file_path)
@@ -1074,6 +1077,7 @@ class MainWindow(QMainWindow):
                 Con = Docking_with_smina.Conversions()
                 Con.Maximum(ligand_path)
                 bar.setMaximum(Con.maxim)
+                bar.setValue(0)
 
                 for ligand in Con.conversions(protein_path, ligand_path, folder_text, X, Y, Z, XS, YS, ZS, combo_index):
                     bar.setValue(Con.contator)
@@ -1243,6 +1247,7 @@ class MainWindow(QMainWindow):
                 Con = Redocking_with_smina.Conversions()
                 Con.Maximum(ligand_path)
                 bar.setMaximum(Con.maxim)
+                bar.setValue(0)
 
                 Con.conversions(protein_path, ligand_path, folder_text, combo_index)
                 bar.setValue(Con.contator)
@@ -1430,6 +1435,7 @@ class MainWindow(QMainWindow):
                 Con = Convert_pdbqt_to_mol2.Conversions()
                 Con.Maximum(ligands)
                 bar.setMaximum(Con.maxim)
+                bar.setValue(0)
 
                 for ligand in Con.conversions(ligands, folder_text):
                     bar.setValue(Con.contator)
@@ -1584,6 +1590,7 @@ class MainWindow(QMainWindow):
                 Con = Calculate_RMSD.Conversions()
                 Con.Maximum()
                 bar.setMaximum(Con.maxim)
+                bar.setValue(0)
 
                 Con.conversions(file_1, file_2, folder_text)
                 bar.setValue(Con.contator)
@@ -1740,6 +1747,7 @@ class MainWindow(QMainWindow):
                 Con = Best_screening.Conversions()
                 Con.Maximum(logs)
                 bar.setMaximum(Con.maxim)
+                bar.setValue(0)
 
                 for log in Con.conversions(NLE, logs, folder_text, index):
                     bar.setValue(Con.contator)
@@ -1889,6 +1897,7 @@ class MainWindow(QMainWindow):
                     Con = Consensus_model_for_smi.Conversions()
                     Con.Maximum(file_path)
                     bar.setMaximum(Con.maxim)
+                    bar.setValue(0)
 
                     try:
                         for smile in Con.conversions(file_path, folder_text):
@@ -1926,14 +1935,153 @@ class MainWindow(QMainWindow):
     
     def setup_page45(self):
 
+         # Create the layout
         layout = QVBoxLayout()
-        label = CustomLabel("Este es un QLabel en la Página 45")
-        CB = CustomCheckBox()
-        button = QPushButton("Este es un QPushButton en la Página 45") 
-        layout.addWidget(label)
-        layout.addWidget(CB)
-        layout.addWidget(button)
+
+        # Description label
+        des_label = CustomTitleLabel("INTERACTION ANALYSIS WITH PROLIF")
+
+        # Title layout
+        title_layout = QHBoxLayout()
+        TSL = QSpacerItem(10000, 10, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        TSR = QSpacerItem(10000, 10, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        
+        # Select protein
+        # File path
+        label_file = CustomLabel("Original protein PBD: ")
+        label_file.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        label_file.setFixedHeight(30)
+
+        # File Label for path
+        label_path = CustomPathLabel("")
+
+        # Button for file path
+        Button_path = QPushButton("...")
+        Button_path.setFixedWidth(40)
+        Button_path.setFixedHeight(40)
+        Button_path.clicked.connect(lambda: self.open_file_dialog("pdb files (*.pdb);;All files (*)", label_path))
+
+        # Horizontal layout
+        Hlayout = QHBoxLayout()
+
+        # File path
+        labelligand_file = CustomLabel("Docked ligands folder: ")
+        labelligand_file.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        labelligand_file.setFixedHeight(30)
+
+        # File label for ligands path
+        ligands_path = CustomPathLabel("")
+
+        # Button for ligands path
+        Button_lpath = QPushButton("...")
+        Button_lpath.setFixedWidth(40)
+        Button_lpath.setFixedHeight(40)
+        Button_lpath.clicked.connect(lambda: self.open_folder_dialog(ligands_path))
+
+        # Horizontal ligand layout
+        hligandlayout = QHBoxLayout()
+
+        # Name folder
+        # Line Edit
+        TextLE = CustomLabel("Name folder: ")
+        MyLE = CustomLineEdit()
+        validator = QRegularExpressionValidator(QRegularExpression("^[A-Za-z ]*$"))
+        MyLE.setValidator(validator)
+
+        # Horizontal size layout
+        slayout = QHBoxLayout()
+
+        # Validator for numbers
+        size_validator = QRegularExpressionValidator(QRegularExpression("^-?[0-9]*\\.?[0-9]+$"))
+
+
+        # Label of Combo Box
+        label_combo = CustomLabel("Scoring: ")
+        label_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        
+
+        # PushButton
+        PButton = CustomButton("Convert")
+        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_45(label_path, ligands_path, MyLE, ProgresBar))
+        PButton.setFixedWidth(300)
+
+        # Progress Bar
+        ProgresBar = QProgressBar()
+        ProgresBar.setFixedHeight(50)
+
+        # Convert layout
+        Clayout = QHBoxLayout()
+        CSL = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+        CSR = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
+
+        # Bottom Spacer
+        spacer_bottom = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        #  ------------------------- Add Items -------------------------
+
+        # Add the title
+        title_layout.addItem(TSL)
+        title_layout.addWidget(des_label)
+        title_layout.addItem(TSR)
+        layout.addItem(title_layout)
+        layout.addSpacing(30)
+
+        # Add protein label path
+        layout.addWidget(label_file)
+        Hlayout.addWidget(label_path)
+        Hlayout.addWidget(Button_path)
+        layout.addItem(Hlayout)
+        layout.addSpacing(30)
+
+        # Add ligand label path
+        layout.addWidget(labelligand_file)
+        hligandlayout.addWidget(ligands_path)
+        hligandlayout.addWidget(Button_lpath)
+        layout.addItem(hligandlayout)
+        layout.addSpacing(30)
+
+        # Add the line edit
+        layout.addWidget(TextLE)
+        layout.addWidget(MyLE)
+        layout.addSpacing(50)
+
+        # Horizontal layout for the button
+        Clayout.addItem(CSL)
+        Clayout.addWidget(PButton)
+        Clayout.addItem(CSR)
+        layout.addItem(Clayout)
+
+        # Progress bar and bottom
+        layout.addSpacing(20)
+        layout.addWidget(ProgresBar)
+        layout.addItem(spacer_bottom)
+
+        # Add bottom spacer
+        layout.addItem(spacer_bottom)
+
+        # Set layout
         self.page_45.setLayout(layout)
+    
+    def conversion_to_pdbqt_45(self, file_1, file_2, folder_LineEdit, bar):
+        
+        # Recovery the text
+        Prot_file = file_1.text()
+        Ligands_folder = file_2.text()
+        folder_text = folder_LineEdit.text() if folder_LineEdit.text() != "" else "Interactions files"
+
+        if os.path.isfile(Prot_file) and os.path.isdir(Ligands_folder):
+            
+            try:
+                Con = Interactions.Conversions()
+                Con.Maximum(Ligands_folder)
+                Con.conversions(Prot_file, Ligands_folder, folder_text)
+
+
+            except Exception as e:
+                QMessageBox.critical(self, "Error 4_5-1", e)
+            
+        else:
+            QMessageBox.critical(self, "Error 4_5-2", "Please enter a correct path")
     
     def setup_page46(self):
 

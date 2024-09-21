@@ -30,7 +30,6 @@ class DropdownWindow3(QWidget):
 
     button1Clicked = Signal()
     button2Clicked = Signal()
-    button3Clicked = Signal()
 
 
     def __init__(self, main_window=None):
@@ -58,12 +57,10 @@ class DropdownWindow3(QWidget):
         # Añadir algunos botones a la ventana desplegable
         button1 = CustomButton("Docking")
         button2 = CustomButton("Redocking")
-        button3 = CustomButton("Consensus docking")
         
         
         layout.addWidget(button1)
         layout.addWidget(button2)
-        layout.addWidget(button3)
         
         self.setLayout(layout)
         self.resize(200, 150)  # Ajusta el tamaño de la ventana desplegable
@@ -72,7 +69,6 @@ class DropdownWindow3(QWidget):
 
         button1.clicked.connect(self.button1_clicked)
         button2.clicked.connect(self.button2_clicked)
-        button3.clicked.connect(self.button3_clicked)
     
     def button1_clicked(self):
         self.button1Clicked.emit()
@@ -80,10 +76,6 @@ class DropdownWindow3(QWidget):
     
     def button2_clicked(self):
         self.button2Clicked.emit()
-        self.close()
-    
-    def button3_clicked(self):
-        self.button3Clicked.emit()
         self.close()
 
     def show(self, button):

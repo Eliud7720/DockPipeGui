@@ -37,6 +37,22 @@ class Conversions():
         data_array = np.array(array, dtype=float)
 
         geometric_center = np.mean(data_array, axis=0)
+        geometric_array = np.array(geometric_center)
+
+        distance = 0
+
+        for element in xyz_list:
+            element = np.array(element, dtype = float)
+
+            new_distance = np.linalg.norm(element-geometric_array)
+
+            if new_distance > distance:
+                distance = new_distance
+        
+        size_X = distance + 7
+        size_Y = distance + 7
+        size_Z = distance + 7
+
 
         basename = os.path.basename(ligand).split(".")[0]
 
@@ -46,9 +62,9 @@ class Conversions():
             file.write(f"Center_X: {round(geometric_center[0], 2)}\n")
             file.write(f"Center_y: {round(geometric_center[1], 2)}\n")
             file.write(f"Center_z: {round(geometric_center[2], 2)}\n")
-            file.write(f"size_x: 20\n")
-            file.write(f"size_y: 20\n")
-            file.write(f"size_z: 20")
+            file.write(f"size_x: {size_X}\n")
+            file.write(f"size_y: {size_Y}\n")
+            file.write(f"size_z: {size_Z}")
 
         command = [
             './lib/smina',
@@ -59,9 +75,9 @@ class Conversions():
             '--center_x', str(round(geometric_center[0], 2)),
             '--center_y', str(round(geometric_center[1], 2)),
             '--center_z', str(round(geometric_center[2], 2)),
-            '--size_x', '20',
-            '--size_y', '20',
-            '--size_z', '20',
+            '--size_x', str(size_X),
+            '--size_y', str(size_Y),
+            '--size_z', str(size_Z),
             '--scoring', score
             ]
         
