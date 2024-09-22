@@ -2,15 +2,24 @@ import subprocess
 import os
 import glob
 from Bio import PDB
+from PySide6.QtCore import QThread, Signal
 
 
-class Conversions():
-    def __init__(self):
+class Conversions(QThread):
+    progress = Signal(int)  # Señal para actualizar la barra de progreso
+    finished = Signal()  # Señal para indicar que la conversión ha terminado
+
+    def __init__(self, ini_folder, des_folder, save_ligands):
+        super().__init__()  # Inicializar la clase base
         self.contator = 0
         self.maxim = 0
         self.chains = []
         self.selected_chains = []
         self.proteins = []
+        self._running = True  # Control para la ejecución
+        self.ini_folder = ini_folder + "/"
+        self.des_folder = des_folder + "/"
+        self.save_ligands = save_ligands
     
     def get_proteins(self, ini_folder):
         ini_folder = ini_folder + "/"
@@ -19,7 +28,6 @@ class Conversions():
         for pdb in pdbs_files:
             self.proteins.append(os.path.basename(pdb))
 
-    
     def Chains(self, ini_folder):
         ini_folder = ini_folder + "/"
         pdbs_files = glob.glob(ini_folder + '*.pdb')
@@ -35,19 +43,20 @@ class Conversions():
                 for chain in model:
                     self.chains.append(chain.id)
             
-            yield
+            yield self.chains
 
-    def conversions(self, ini_folder, des_folder, save_ligands):
-        ini_folder = ini_folder + "/"
-        des_folder = des_folder + "/"
-        os.makedirs(des_folder, exist_ok=True)
-        pdbs_files = glob.glob(ini_folder + '*.pdb')
+    def run(self):
+        os.makedirs(self.des_folder, exist_ok=True)
+        pdbs_files = glob.glob(self.ini_folder + '*.pdb')
 
         # Read and write pdb files
         parser = PDB.PDBParser(QUIET=True)
         io = PDB.PDBIO()
 
         for pdb in pdbs_files:
+
+            if not self._running:  # Comprobar si se debe detener
+                break
             
             # Create the temporal file withouth the HETATM lines
             with open(pdb, 'r') as file:
@@ -68,8 +77,8 @@ class Conversions():
 
           
             # Save the ligands
-            if save_ligands and ligands:
-                ligands_folder = des_folder + "ligands_pdbqt/"
+            if self.save_ligands and ligands:
+                ligands_folder = self.des_folder + "ligands_pdbqt/"
                 os.makedirs(ligands_folder, exist_ok=True)
 
                 # Dictionary for storing ligands by chain
@@ -124,18 +133,24 @@ class Conversions():
 
             io.save(temp_pdb, select=ChainSelect(self.selected_chains))
 
-            final_name = des_folder + os.path.basename(os.path.splitext(pdb)[0]) + ".pdbqt"
+            final_name = self.des_folder + os.path.basename(os.path.splitext(pdb)[0]) + ".pdbqt"
             result = subprocess.run(["./lib/obabel", "-i", "pdb", temp_pdb, "-xr", "-opdbqt", "-O", final_name, "--partialcharge", "gasteiger"], capture_output=True, text=True)
             
             os.remove(temp_pdb)
 
             self.contator += 1
-            yield
+            self.progress.emit(self.contator)
+        
+        self.finished.emit()
 
     def Maximum(self, ini_folder):
         ini_folder = ini_folder + "/"
         pdbs_files = glob.glob(ini_folder + '*.pdb')
         self.maxim = len(pdbs_files)
+    
+    def stop(self):
+        """Método para detener la ejecución del hilo."""
+        self._running = False
 
 class ChainSelect(PDB.Select):
     def __init__(self, chains_to_select):

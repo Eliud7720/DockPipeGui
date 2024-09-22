@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.17.") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.18.") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -781,7 +781,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_21(label_path, ProgresBar, MyLE, MyCheck))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Convert", self.conversion_to_pdbqt_21, PButton, label_path, ProgresBar, MyLE, MyCheck))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -845,7 +845,7 @@ class MainWindow(QMainWindow):
         # Establish layout
         self.page_21.setLayout(layout)
 
-    def conversion_to_pdbqt_21(self, label, bar, LineEdit, CheckBox):
+    def conversion_to_pdbqt_21(self, text_on, button, label, bar, LineEdit, CheckBox):
         
         file_path = label.text()
         folder_text = LineEdit.text() if LineEdit.text() != "" else "PDBQT files"
@@ -854,37 +854,47 @@ class MainWindow(QMainWindow):
         if os.path.isdir(file_path):
 
             try:
-                Con = Create_protein_pdbqt_by_obabel.Conversions()
-                Con.Maximum(file_path)
-                bar.setMaximum(Con.maxim)
+                button.setText("Cancel")
+                self.conversion_thread = Create_protein_pdbqt_by_obabel.Conversions(file_path, folder_text, status)
+
+                # Conectar la señal de progreso a la barra
+                self.conversion_thread.progress.connect(bar.setValue)
+                self.conversion_thread.finished.connect(lambda: button.setText(text_on))
+
+                # Obtener el número máximo de elementos
+                self.conversion_thread.Maximum(file_path)
+                bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
                 list_chains = []
-                
-                Con.get_proteins(file_path)
-                list_proteins = Con.proteins
 
-                for pdb_file in Con.Chains(file_path):
-                    list_chains.append(Con.chains)
-                
-                
-                generator = Con.conversions(file_path, folder_text, status)
+                # Obtener las proteínas y cadenas
+                self.conversion_thread.get_proteins(file_path)
+                list_proteins = self.conversion_thread.proteins
+
+                for pdb_file in self.conversion_thread.Chains(file_path):
+                    if not self.conversion_thread._running:  # Verificar si el hilo está corriendo
+                        break
+                    list_chains.append(self.conversion_thread.chains)
+
+                # Aquí puedes mostrar el diálogo antes de iniciar el hilo
                 for i, chain in enumerate(list_chains):
+                    if not self.conversion_thread._running:
+                        break
                     if "B" in chain:
                         dialog = CheckableOptionsDialog(chain, list_proteins[i], self)
-
                         if dialog.exec():
                             selected_options = dialog.get_checked_options()
-                            Con.selected_chains = selected_options
+                            print(selected_options)
+                            self.conversion_thread.selected_chains = selected_options
                     else:
-                        Con.selected_chains = chain
+                        self.conversion_thread.selected_chains = chain
+
+                # Iniciar el hilo después de haber establecido las cadenas seleccionadas
+                self.conversion_thread.start()
                     
-                    next(generator)
-                    bar.setValue(Con.contator)
-                
 
             except Exception as e:
-                QMessageBox.critical(self, "Error 2_1-2", e)
-
+                QMessageBox.critical(self, "Error", e)
         
         else:
             QMessageBox.critical(self, "Error 2_1-1", "Please, introduce a correct file path.")
