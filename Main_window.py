@@ -45,12 +45,15 @@ class MainWindow(QMainWindow):
         self.ws_2 = False
         self.ws_3 = False
         self.ws_4 = False
+        
+        # Threads
+        self.thread = None
 
 
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.15.") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.17.") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -363,7 +366,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_11(label_path, ProgresBar, Combo, MyLE))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Convert", self.conversion_to_pdbqt_11, PButton, label_path, ProgresBar, Combo, MyLE))
         PButton.setFixedWidth(300)
 
 
@@ -419,7 +422,7 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_11.setLayout(layout)
     
-    def conversion_to_pdbqt_11(self, label, bar, combo, LineEdit):
+    def conversion_to_pdbqt_11(self, text_on, button, label, bar, combo, LineEdit):
         
         file_path = label.text()
         folder_text = LineEdit.text() if LineEdit.text() != "" else "PDBQT files"
@@ -429,46 +432,68 @@ class MainWindow(QMainWindow):
             if (combo.currentIndex() == 0):
 
                 try:
-                    Con = Create_pdbqt_by_smi_meeko.Conversions()
-                    maxim = Create_pdbqt_by_smi_meeko.Maximum()
-                    maxim.contar_maximo(label.text())
-                    bar.setMaximum(maxim.maximo)
+                    button.setText("Cancel")
+                    self.conversion_thread = Create_pdbqt_by_smi_meeko.Conversions(file_path, folder_text)
+                    self.conversion_thread.progress.connect(bar.setValue)
+                    self.conversion_thread.Maximum(file_path)
+                    bar.setMaximum(self.conversion_thread.maxim)
                     bar.setValue(0)
-                    
-                    for current_count, _, _ in Con.conversion(file_path, folder_text):
-                        bar.setValue(current_count)
+                    self.conversion_thread.start()
+                    self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 1_1-2", e)
+                    QMessageBox.critical(self, "Error", str(e))
+                    button.setText(text_on)
 
             elif (combo.currentIndex() == 1):
-                try:
-                    Con = Create_pdbqt_by_sdf_meeko.Conversions()
-                    maxim = Create_pdbqt_by_sdf_meeko.Maximum()
-                    maxim.contar_maximo(label.text())
-                    bar.setMaximum(maxim.maximo)
-                    bar.setValue(0)
-                    
-                    for current_count, _, _ in Con.conversion(file_path, folder_text):
-                        bar.setValue(current_count)
+                    try:
+                        
+                        # Cambiar el texto del botón a "Cancel"
+                        button.setText("Cancel")
 
-                except Exception as e:
-                    QMessageBox.critical(self, "Error 1_1-3", e)
+                        # Inicializar el hilo con los parámetros
+                        self.conversion_thread = Create_pdbqt_by_sdf_meeko.Conversions(file_path, folder_text)
+
+                        # Conectar la señal de progreso a la barra
+                        self.conversion_thread.progress.connect(bar.setValue)
+
+                        # Obtener el número máximo de moléculas y configurar la barra de progreso
+                        self.conversion_thread.Maximum(file_path)
+                        bar.setMaximum(self.conversion_thread.maxim)
+                        bar.setValue(0)
+
+                        # Iniciar el hilo
+                        self.conversion_thread.start()
+
+                        # Cambiar el texto del botón al finalizar
+                        self.conversion_thread.finished.connect(lambda: button.setText(text_on))
+
+                    except Exception as e:
+                        QMessageBox.critical(self, "Error", str(e))
+                        button.setText(text_on)
 
             elif (combo.currentIndex() == 2):
                 try:
-                    Con = Create_pdbqt_by_txt_meeko.Conversions()
-                    maxim = Create_pdbqt_by_txt_meeko.Maximum()
-                    maxim.contar_maximo(label.text())
-                    bar.setMaximum(maxim.maximo)
+                    button.setText("Cancel")
+                    self.conversion_thread = Create_pdbqt_by_txt_meeko.Conversions(file_path, folder_text)
+                    
+                    # Conectar la señal de progreso a la barra
+                    self.conversion_thread.progress.connect(bar.setValue)
+                    
+                    # Obtener el número máximo de elementos
+                    self.conversion_thread.Maximum(label.text())
+                    bar.setMaximum(self.conversion_thread.maximum)
                     bar.setValue(0)
                     
-                    for current_count, _, _ in Con.conversion(file_path, folder_text):
-                        bar.setValue(current_count)
+                    # Iniciar el hilo
+                    self.conversion_thread.start()
+
+                    # Cambiar el texto del botón al finalizar
+                    self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 1_1-4", e)
-        
+                    QMessageBox.critical(self, "Error", str(e))
+                    button.setText(text_on)
         else:
             QMessageBox.critical(self, "Error 1_1-1", "Please, introduce a correct file path.")
 
@@ -480,7 +505,6 @@ class MainWindow(QMainWindow):
             return "sdf files (*.sdf);;All files (*)"
         elif combo.currentIndex() == 2:
             return "txt files (*.txt);;All files (*)"
-
 
 
     def setup_page12(self):
@@ -535,7 +559,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_12(label_path, ProgresBar, Combo, MyLE))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Convert", self.conversion_to_pdbqt_12, PButton, label_path, ProgresBar, Combo, MyLE))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -596,7 +620,7 @@ class MainWindow(QMainWindow):
         layout.addItem(spacer_bottom)
         self.page_12.setLayout(layout)
 
-    def conversion_to_pdbqt_12(self, label, bar, combo, LineEdit):
+    def conversion_to_pdbqt_12(self, text_on, button, label, bar, combo, LineEdit):
         
         file_path = label.text()
         folder_text = LineEdit.text() if LineEdit.text() != "" else "PDBQT files"
@@ -606,48 +630,74 @@ class MainWindow(QMainWindow):
             if (combo.currentIndex() == 0):
 
                 try:
-                    Con = Create_pdbqt_by_smi_obabel.Conversions()
-                    Con.Maximum(label.text())
-                    bar.setMaximum(Con.maxim)
+                    button.setText("Cancel")
+                    self.conversion_thread = Create_pdbqt_by_smi_obabel.Conversions(file_path, folder_text)
+                    
+                    # Conectar la señal de progreso a la barra
+                    self.conversion_thread.progress.connect(bar.setValue)
+                    
+                    # Obtener el número máximo de elementos
+                    self.conversion_thread.Maximum(file_path)
+                    bar.setMaximum(self.conversion_thread.maxim)
                     bar.setValue(0)
+                    
+                    # Iniciar el hilo
+                    self.conversion_thread.start()
 
-                    for pdbqt_file in Con.conversions(folder_text, file_path):
-                        bar.setValue(Con.contator)
+                    # Cambiar el texto del botón al finalizar
+                    self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 1_2-1", e)
+                    QMessageBox.critical(self, "Error", str(e))
+                    button.setText(text_on)
 
             elif (combo.currentIndex() == 1):
                 try:
-                    Con = Create_pdbqt_by_sdf_obabel.Conversions()
-                    Con.Maximum(label.text())
-                    bar.setMaximum(Con.maxim)
+                    button.setText("Cancel")
+                    self.conversion_thread = Create_pdbqt_by_sdf_obabel.Conversions(file_path, folder_text)
+
+                    # Conectar la señal de progreso a la barra
+                    self.conversion_thread.progress.connect(bar.setValue)
+
+                    # Obtener el número máximo de elementos
+                    self.conversion_thread.Maximum(file_path)
+                    bar.setMaximum(self.conversion_thread.maxim)
                     bar.setValue(0)
-                    
-                    
-                    for pdbqt_file in Con.conversions(folder_text, file_path):
-                        bar.setValue(Con.contator)
-                    
+
+                    # Iniciar el hilo
+                    self.conversion_thread.start()
+
+                    # Cambiar el texto del botón al finalizar
+                    self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 1_2-2", e)
+                    QMessageBox.critical(self, "Error", str(e))
+                    button.setText(text_on)
 
             elif (combo.currentIndex() == 2):
                 
                 try:
+                    button.setText("Cancel")
+                    self.conversion_thread = Create_pdbqt_by_txt_obabel.Conversions(file_path, folder_text)
 
-                    Con = Create_pdbqt_by_txt_obabel.Conversions()
-                    Con.Maximum(label.text())
-                    bar.setMaximum(Con.maxim)
+                    # Conectar la señal de progreso a la barra
+                    self.conversion_thread.progress.connect(bar.setValue)
+
+                    # Obtener el número máximo de elementos
+                    self.conversion_thread.Maximum(file_path)
+                    bar.setMaximum(self.conversion_thread.maxim)
                     bar.setValue(0)
 
-                    for pdbqt_file in Con.conversions(folder_text, file_path):
-                        bar.setValue(Con.contator)
-                
-                except Exception as e:
-                    QMessageBox.critical(self, "Error 1_2-3", e)
+                    # Iniciar el hilo
+                    self.conversion_thread.start()
 
-        
+                    # Cambiar el texto del botón al finalizar
+                    self.conversion_thread.finished.connect(lambda: button.setText(text_on))
+
+                except Exception as e:
+                    QMessageBox.critical(self, "Error", str(e))
+
+
         else:
             QMessageBox.critical(self, "Error 1_2-1", "Please, introduce a correct file path.")
 
@@ -2074,8 +2124,10 @@ class MainWindow(QMainWindow):
             try:
                 Con = Interactions.Conversions()
                 Con.Maximum(Ligands_folder)
-                Con.conversions(Prot_file, Ligands_folder, folder_text)
-
+                bar.setMaximum(Con.maxim)
+                bar.setValue(0)
+                for ligand in Con.conversions(Prot_file, Ligands_folder, folder_text):
+                    bar.setValue(Con.contator)
 
             except Exception as e:
                 QMessageBox.critical(self, "Error 4_5-1", e)
@@ -2138,6 +2190,38 @@ class MainWindow(QMainWindow):
         
         # Set the folder path
         label.setText(folder_path)
+
+    # ---------------------------------- HANDLE OPTIONS ----------------------------------"
+    
+    def handle_button_click(self, button, text_on, function, *args):
+        if button.text() == text_on:
+            function(text_on, *args)  # Llama a la función con los argumentos pasados
+        elif button.text() == "Cancel":
+            self.cancel_conversion(button, text_on)
+    
+    def cancel_conversion(self, button, text_on):
+        if self.conversion_thread and self.conversion_thread.isRunning():
+            # Detener el hilo de manera segura
+            self.conversion_thread.stop()
+            button.setEnabled(False)
+            self.conversion_thread.wait()  # Esperar hasta que el hilo termine
+
+            # Cambiar el estado del botón después de que el hilo termine
+            self.is_converting = False
+            button.setText(text_on)
+            button.setEnabled(True)
+
+    def closeEvent(self, event):
+        """
+        Este método se activa cuando la ventana se cierra.
+        Asegura que el hilo se detenga correctamente antes de cerrar la aplicación.
+        """
+        event.accept()  # Aceptar el evento y cerrar la ventana
+        if self.conversion_thread is not None and self.conversion_thread.isRunning():
+            # Detener el hilo de manera segura
+            self.conversion_thread.stop()
+            self.conversion_thread.wait()  # Esperar hasta que termine el hilo
+        event.accept()  # Aceptar el evento de cierre
 
     # ------------------------- ESTABLISH THE PAGES DIRECTIONS -------------------------"
 

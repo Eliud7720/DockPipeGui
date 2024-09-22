@@ -29,13 +29,16 @@ class Conversions():
         # Convert PDBQT files to smiles
         smiles_list = []
         for ligand in ligands_files:
-            result = subprocess.run(["./lib/obabel", ligand, "-O", des_folder + "ligand.pdb"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+            with open(ligand, 'r') as f2:
+                lines = f2.readlines()
 
-            mol = Chem.MolFromPDBFile(des_folder + "ligand.pdb")
-            smiles = Chem.MolToSmiles(mol)
+            smiles = lines[3].split()[2]
             smiles_list.append(smiles)
 
-            os.remove(des_folder + "ligand.pdb")
+
+            self.contator+=1
+            yield
         
         template_list = []    
         for i, ligand in enumerate(ligands_files):
@@ -56,13 +59,19 @@ class Conversions():
 
         for i in range(0, len(pose_iterable)):
             fig = fp.plot_lignetwork(pose_iterable[i])
+            print(fig)
+            print(pose_iterable[i])
+
             with open(des_folder + f"Ligand_{i}.html", "w") as f:
-                f.write(fp.plot_lignetwork(pose_iterable[0]).data)
+                f.write(fp.plot_lignetwork(pose_iterable[i]).data)
+
+            self.contator +=1 
+            yield
+
+        os.remove(des_folder + os.path.basename(protein_file))
     
         
-
-
     def Maximum(self, ini_folder):
         ini_folder = ini_folder + "/"
         pdbs_files = glob.glob(ini_folder + '*.pdbqt')
-        self.maxim = len(pdbs_files)
+        self.maxim = len(pdbs_files) * 2

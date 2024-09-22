@@ -3,46 +3,49 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from meeko import MoleculePreparation
 from meeko import PDBQTWriterLegacy
+from PySide6.QtCore import QThread, Signal
 
-class Conversions:
-    """
-    Function responsible for performing conversions 
-    to pdbqt from an SDF file containing multiple molecules.
-    """
 
-    def __init__(self):
+class Conversions(QThread):
+    progress = Signal(int)  # Señal para actualizar la barra de progreso
+
+    def __init__(self, file_path, folder_text):
+        super().__init__()
+        self.file_path = file_path
+        self.folder_text = folder_text
         self.errors = {}
-        self.maximum = 0
+        self.maxim = 0
+        self._running = True  # Variable para controlar el hilo
 
-    def conversion(self, path: str, folder: str):
+    def run(self):
         """
-        Main function responsible for performing conversions.
-
-        path: Select the file path.
+        Función principal responsable de realizar las conversiones.
         """
-        # Create the list of molecules
+        # Crear lista de moléculas desde el archivo SDF
         list_molecules = []
-
-        # Open the file and read molecules
-        supplier = Chem.SDMolSupplier(path)
+        supplier = Chem.SDMolSupplier(self.file_path)
         for mol in supplier:
             if mol is not None:
                 list_molecules.append(mol)
-        
-        self.maximum = len(list_molecules)
 
-        # Create the directory if it does not exist
-        os.makedirs(folder, exist_ok=True)
+        self.maxim = len(list_molecules)
+
+        # Crear la carpeta si no existe
+        os.makedirs(self.folder_text, exist_ok=True)
 
         for index, mol in enumerate(list_molecules):
-            name = str(index + 1)  # Use the index as the file name (1, 2, 3, etc.)
+            if not self._running:  # Verificar si se debe detener el hilo
+                break
+
+            name = str(index + 1)  # Usar el índice como nombre de archivo
+
             try:
-                # Add hydrogens, embed, and optimize the molecule
+                # Agregar hidrógenos, embeber y optimizar la molécula
                 mol = Chem.AddHs(mol)
                 AllChem.EmbedMolecule(mol, AllChem.ETKDG())
                 AllChem.MMFFOptimizeMolecule(mol)
 
-                # Prepare the molecule and convert to PDBQT
+                # Preparar la molécula y convertir a PDBQT
                 preparator = MoleculePreparation()
                 mol_setups = preparator.prepare(mol)
                 if not mol_setups:
@@ -50,44 +53,41 @@ class Conversions:
 
                 pdbqt_string = ""
                 for setup in mol_setups:
-                    # Check if the return type is a tuple
+                    # Verificar si el retorno es una tupla
                     result = PDBQTWriterLegacy.write_string(setup)
                     if isinstance(result, tuple):
-                        pdbqt_string += result[0]  # Assuming the first element of the tuple is the string
+                        pdbqt_string += result[0]
                     else:
                         pdbqt_string += result
 
-                # Save PDBQT to file
-                pdbqt_path = os.path.join(folder, name + ".pdbqt")
+                # Guardar el archivo PDBQT
+                pdbqt_path = os.path.join(self.folder_text, name + ".pdbqt")
                 with open(pdbqt_path, 'w') as archivo:
                     archivo.write(pdbqt_string)
 
             except Exception as e:
                 self.errors[name] = str(e)
 
-            # Yield progress
-            yield index + 1, self.maximum, list_molecules[:index + 1]
+            # Emitir progreso
+            self.progress.emit(index + 1)
 
-        # Save errors in a file
+        # Guardar errores en un archivo, si los hay
         if self.errors:
-            error_file_path = os.path.join(folder, "errors.txt")
+            error_file_path = os.path.join(self.folder_text, "errors.txt")
             with open(error_file_path, "w") as archivo:
                 for key, value in self.errors.items():
                     archivo.write(f"{key}: {value}\n")
 
+    def stop(self):
+        """Método para detener el hilo de forma segura"""
+        self._running = False
 
-class Maximum:
-    def __init__(self):
-        self.contador = 0
-        self.errores = {}
-        self.maximo = 0
-
-    def contar_maximo(self, ruta: str):
+    def Maximum(self, ruta: str):
+        """Función para contar el número máximo de moléculas en el archivo SDF"""
         list_molecules = []
-
         supplier = Chem.SDMolSupplier(ruta)
         for mol in supplier:
             if mol is not None:
                 list_molecules.append(mol)
 
-        self.maximo = len(list_molecules)
+        self.maxim = len(list_molecules)
