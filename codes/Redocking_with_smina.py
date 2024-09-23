@@ -1,31 +1,39 @@
 import subprocess
 import os
 import numpy as np
+from PySide6.QtCore import QThread, Signal
 
 
-class Conversions():
-    def __init__(self):
+class Conversions(QThread):
+    progress = Signal(int)  # Señal para actualizar la barra de progreso
+    finished = Signal()  # Señal para indicar que la conversión ha terminado
+
+    def __init__(self, protein_file, ligands_folder, folder_text, score):
         self.maxim = 0
         self.contator = 0
+        super().__init__()
+        self.des_folder = folder_text + "/"
+        self.ligand = ligands_folder
+        self.protein_file = protein_file
+        self.score = score
+        self._running = True
     
-    def conversions(self, protein_file, ligands_folder, folder_text, score):
+    def run(self):
         
-        des_folder = folder_text + "/"
-        ligand = ligands_folder
-        os.makedirs(des_folder, exist_ok=True)
+        os.makedirs(self.des_folder, exist_ok=True)
 
         
-        if score == 0:
-            score = "vina"
-        elif score == 1:
-            score = "vinardo"
-        elif score == 2:
-            score = "dkoes"
+        if self.score == 0:
+            self.score = "vina"
+        elif self.score == 1:
+            self.score = "vinardo"
+        elif self.score == 2:
+            self.score = "dkoes"
         
         xyz_list = []
         
         
-        with open(ligand, 'r') as file:
+        with open(self.ligand, 'r') as file:
             lines = file.readlines()
         
         for i, line in enumerate(lines):
@@ -42,6 +50,10 @@ class Conversions():
         distance = 0
 
         for element in xyz_list:
+
+            if not self._running:  # Verificar si se debe detener el hilo
+                break
+
             element = np.array(element, dtype = float)
 
             new_distance = np.linalg.norm(element-geometric_array)
@@ -53,12 +65,13 @@ class Conversions():
         size_Y = distance + 7
         size_Z = distance + 7
 
+        
 
-        basename = os.path.basename(ligand).split(".")[0]
+        basename = os.path.basename(self.ligand).split(".")[0]
 
-        with open(des_folder + "config.txt", "w") as file:
+        with open(self.des_folder + "config.txt", "w") as file:
             file.write("----------Configuration employeed----------\n")
-            file.write(f"Scoring: {score}\n")
+            file.write(f"Scoring: {self.score}\n")
             file.write(f"Center_X: {round(geometric_center[0], 2)}\n")
             file.write(f"Center_y: {round(geometric_center[1], 2)}\n")
             file.write(f"Center_z: {round(geometric_center[2], 2)}\n")
@@ -68,27 +81,30 @@ class Conversions():
 
         command = [
             './lib/smina',
-            '-r', protein_file,
-            '-l', ligand,
-            '-o', des_folder + basename + "_docked.pdbqt",
-            '--log', des_folder + basename + "_docked.log",
+            '-r', self.protein_file,
+            '-l', self.ligand,
+            '-o', self.des_folder + basename + "_docked.pdbqt",
+            '--log', self.des_folder + basename + "_docked.log",
             '--center_x', str(round(geometric_center[0], 2)),
             '--center_y', str(round(geometric_center[1], 2)),
             '--center_z', str(round(geometric_center[2], 2)),
             '--size_x', str(size_X),
             '--size_y', str(size_Y),
             '--size_z', str(size_Z),
-            '--scoring', score
+            '--scoring', self.score
             ]
         
         subprocess.run(command, capture_output=True, text=True)
 
-        self.contator +=1 
+        self.progress.emit(self.contator + 1)
 
+        self.finished.emit()
 
-        
-    
     def Maximum(self, ligands_folder):
         self.maxim = 1
+    
+    def stop(self):
+        """Método para detener el hilo de forma segura"""
+        self._running = False
 
     

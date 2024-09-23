@@ -1,0 +1,8 @@
+----------Configuration employeed----------
+Scoring: vina
+Center_X: 19.63
+Center_y: 43.46
+Center_z: 15.45
+size_x: 13.314420517767768
+size_y: 13.314420517767768
+size_z: 13.314420517767768

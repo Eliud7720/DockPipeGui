@@ -4,23 +4,34 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from joblib import load
 import os
+from PySide6.QtCore import QThread, Signal
 
-class Conversions():
-    def __init__(self):
+
+class Conversions(QThread):
+    progress = Signal(int)  # Señal para actualizar la barra de progreso
+    finished = Signal()  # Señal para indicar que la conversión ha terminado
+
+    def __init__(self, ligand_path, folder_text):
+        super().__init__()
+        self._running = True
         self.maxim = 0
         self.contator = 0
+        self.des_folder = folder_text + "/"
+        self.ligand_path = ligand_path
 
-    def conversions(self, ligand_path, folder_text):
-        des_folder = folder_text + "/"
-        os.makedirs(des_folder, exist_ok=True)
+    def run(self):
+        os.makedirs(self.des_folder, exist_ok=True)
 
-        with open(ligand_path, "r") as f:
+        with open(self.ligand_path, "r") as f:
             lines = f.readlines()
 
         smile_list = []
         ID_list = []
 
         for line in lines:
+            if not self._running:
+                break
+
             smile_list.append(line.split()[0])
             ID_list.append(line.split()[1])
 
@@ -28,12 +39,14 @@ class Conversions():
         Probab_list = []
 
         for line in smile_list:
+            if not self._running:
+                break
             
             BBB_list.append(self.consensus_model(line)[0])
             Probab_list.append(self.consensus_model(line)[1])
 
             self.contator +=1
-            yield
+            self.progress.emit(self.contator)
         
         My_dict = {"SMILES": lines,
                    "ID": ID_list,
@@ -42,9 +55,9 @@ class Conversions():
         
         df = pd.DataFrame(My_dict)
 
-        print(df)
-        df.to_csv(des_folder + "Results.csv", index = False)
+        df.to_csv(self.des_folder + "Results.csv", index = False)
 
+        self.finished.emit()
 
     def consensus_model(self, smiles):
 
@@ -97,3 +110,7 @@ class Conversions():
             list_smiles.append(linea.split()[0])
 
         self.maxim = len(list_smiles)
+    
+    def stop(self):
+        """Método para detener el hilo de forma segura"""
+        self._running = False

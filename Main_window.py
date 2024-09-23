@@ -47,13 +47,13 @@ class MainWindow(QMainWindow):
         self.ws_4 = False
         
         # Threads
-        self.thread = None
+        self.conversion_thread = None
 
 
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.18.") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGui v. 0.1.19.") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -696,6 +696,7 @@ class MainWindow(QMainWindow):
 
                 except Exception as e:
                     QMessageBox.critical(self, "Error", str(e))
+                    button.setText(text_on)
 
 
         else:
@@ -884,7 +885,6 @@ class MainWindow(QMainWindow):
                         dialog = CheckableOptionsDialog(chain, list_proteins[i], self)
                         if dialog.exec():
                             selected_options = dialog.get_checked_options()
-                            print(selected_options)
                             self.conversion_thread.selected_chains = selected_options
                     else:
                         self.conversion_thread.selected_chains = chain
@@ -1028,7 +1028,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Do docking")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_31(label_path, ligands_path, MyLE, XLE, YLE, ZLE, X_SLE, Y_SLE, Z_SLE, ProgresBar, Combo))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Do docking", self.conversion_to_pdbqt_31, PButton, label_path, ligands_path, MyLE, XLE, YLE, ZLE, X_SLE, Y_SLE, Z_SLE, ProgresBar, Combo))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -1117,7 +1117,7 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_31.setLayout(layout) 
 
-    def conversion_to_pdbqt_31(self, protein_label, ligand_label, folder_LineEdit, X_LE, Y_LE, Z_LE, XS_LE, YS_LE, ZS_LE, bar, combo):
+    def conversion_to_pdbqt_31(self, text_on, button, protein_label, ligand_label, folder_LineEdit, X_LE, Y_LE, Z_LE, XS_LE, YS_LE, ZS_LE, bar, combo):
         
         # Recovery the text
         protein_path = protein_label.text()
@@ -1134,16 +1134,20 @@ class MainWindow(QMainWindow):
         if os.path.isfile(protein_path) and os.path.isdir(ligand_path) and X and Y and Z and XS and YS and ZS:
             
             try:
-                Con = Docking_with_smina.Conversions()
-                Con.Maximum(ligand_path)
-                bar.setMaximum(Con.maxim)
+                button.setText("Cancel")
+                self.conversion_thread = Docking_with_smina.Conversions(protein_path, ligand_path, folder_text, X, Y, Z, XS, YS, ZS, combo_index)
+                self.conversion_thread.Maximum(ligand_path)
+                bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
-
-                for ligand in Con.conversions(protein_path, ligand_path, folder_text, X, Y, Z, XS, YS, ZS, combo_index):
-                    bar.setValue(Con.contator)
+                # Conectar la señal de progreso a la barra
+                self.conversion_thread.progress.connect(bar.setValue)
+                self.conversion_thread.start()
+                self.conversion_thread.finished.connect(lambda: button.setText(text_on))
+            
 
             except Exception as e:
-                QMessageBox.critical(self, "Error 3_1-2", e)
+                QMessageBox.critical(self, "Error", str(e))
+                button.setText(text_on)
             
         else:
             QMessageBox.critical(self, "Error 3_1-1", "Make sure to fill in all fields.")
@@ -1225,7 +1229,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Do docking")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_32(label_path, ligands_path, MyLE, ProgresBar, Combo))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Do docking", self.conversion_to_pdbqt_32, PButton, label_path, ligands_path, MyLE, ProgresBar, Combo))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -1293,7 +1297,7 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_32.setLayout(layout)
 
-    def conversion_to_pdbqt_32(self, protein_label, ligand_label, folder_LineEdit, bar, combo):
+    def conversion_to_pdbqt_32(self, text_on, button, protein_label, ligand_label, folder_LineEdit, bar, combo):
         
         # Recovery the text
         protein_path = protein_label.text()
@@ -1304,16 +1308,20 @@ class MainWindow(QMainWindow):
         if os.path.isfile(protein_path) and os.path.isfile(ligand_path):
             
             try:
-                Con = Redocking_with_smina.Conversions()
-                Con.Maximum(ligand_path)
-                bar.setMaximum(Con.maxim)
+                button.setText("Cancel")
+                self.conversion_thread = Redocking_with_smina.Conversions(protein_path, ligand_path, folder_text, combo_index)
+                self.conversion_thread.Maximum(ligand_path)
+                bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
+                # Conectar la señal de progreso a la barra
+                self.conversion_thread.progress.connect(bar.setValue)
 
-                Con.conversions(protein_path, ligand_path, folder_text, combo_index)
-                bar.setValue(Con.contator)
+                self.conversion_thread.start()
+                self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
             except Exception as e:
-                QMessageBox.critical(self, "Error 3_1-2", e)
+                QMessageBox.critical(self, "Error", str(e))
+                button.setText(text_on)
             
         else:
             QMessageBox.critical(self, "Error 3_1-1", "Make sure to fill in all fields.")
@@ -1429,8 +1437,8 @@ class MainWindow(QMainWindow):
 
 
         # PushButton
-        PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_41(label_path, MyLE , ProgresBar))
+        PButton = CustomButton("Split")
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Split", self.conversion_to_pdbqt_41, PButton, label_path, MyLE, ProgresBar))
         PButton.setFixedWidth(300)
 
 
@@ -1483,7 +1491,7 @@ class MainWindow(QMainWindow):
         self.page_41.setLayout(layout)
 
 
-    def conversion_to_pdbqt_41(self, file_folder, folder_LineEdit, bar):
+    def conversion_to_pdbqt_41(self, text_on, button, file_folder, folder_LineEdit, bar):
         
         # Recovery the text
         ligands = file_folder.text()
@@ -1492,17 +1500,22 @@ class MainWindow(QMainWindow):
         if os.path.isdir(ligands):
             
             try:
-                Con = Convert_pdbqt_to_mol2.Conversions()
-                Con.Maximum(ligands)
-                bar.setMaximum(Con.maxim)
+                button.setText("Cancel")
+                self.conversion_thread = Convert_pdbqt_to_mol2.Conversions(ligands, folder_text)
+                self.conversion_thread.Maximum(ligands)
+                bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
 
-                for ligand in Con.conversions(ligands, folder_text):
-                    bar.setValue(Con.contator)
+                # Conectar la señal de progreso a la barra
+                self.conversion_thread.progress.connect(bar.setValue)
+                
+                self.conversion_thread.start()
+                self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
 
             except Exception as e:
-                QMessageBox.critical(self, "Error 4_1-2", e)
+                QMessageBox.critical(self, "Error 4_1-2", str(e))
+                button.setText(text_on)
             
         else:
             QMessageBox.critical(self, "Error 4_1-1", "Please enter a correct path")
@@ -1577,7 +1590,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_42(label_path, ligands_path, MyLE, ProgresBar))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Convert", self.conversion_to_pdbqt_42, PButton, label_path, ligands_path, MyLE, ProgresBar))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -1637,7 +1650,7 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_42.setLayout(layout)
     
-    def conversion_to_pdbqt_42(self, file_1, file_2, folder_LineEdit, bar):
+    def conversion_to_pdbqt_42(self, text_on, button, file_1, file_2, folder_LineEdit, bar):
         
         # Recovery the text
         file_1 = file_1.text()
@@ -1647,20 +1660,27 @@ class MainWindow(QMainWindow):
         if os.path.isfile(file_1) and os.path.isfile(file_2):
             
             try:
-                Con = Calculate_RMSD.Conversions()
-                Con.Maximum()
-                bar.setMaximum(Con.maxim)
+                button.setText("Cancel")
+                self.conversion_thread = Calculate_RMSD.Conversions(file_1, file_2, folder_text)
+                self.conversion_thread.Maximum()
+                bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
 
-                Con.conversions(file_1, file_2, folder_text)
-                bar.setValue(Con.contator)
+                # Conectar la señal de progreso a la barra
+                self.conversion_thread.progress.connect(bar.setValue)
+
+                self.conversion_thread.start()
+
+                self.conversion_thread.finished.connect(lambda: button.setText(text_on))
+                
 
 
             except Exception as e:
-                QMessageBox.critical(self, "Error 4_1-2", e)
+                QMessageBox.critical(self, "Error", str(e))
+                button.setText(text_on)
             
         else:
-            QMessageBox.critical(self, "Error 4_2-2", "Please enter a correct path")
+            QMessageBox.critical(self, "Error 4_3-2", "Please enter a correct path")
     
     def setup_page43(self):
 
@@ -1722,7 +1742,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_43(NumberLE, label_path, MyLE, Combo, ProgresBar))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Convert", self.conversion_to_pdbqt_43, PButton, NumberLE, label_path, MyLE, Combo, ProgresBar))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -1793,7 +1813,7 @@ class MainWindow(QMainWindow):
         layout.addItem(spacer_bottom)
         self.page_43.setLayout(layout)
     
-    def conversion_to_pdbqt_43(self, NLE, logs_folder, des_folder, Combo, bar):
+    def conversion_to_pdbqt_43(self, text_on, button, NLE, logs_folder, des_folder, Combo, bar):
         
         # Recovery the text
         NLE = NLE.text()
@@ -1804,17 +1824,20 @@ class MainWindow(QMainWindow):
         if os.path.isdir(logs) and NLE != "":
             
             try:
-                Con = Best_screening.Conversions()
-                Con.Maximum(logs)
-                bar.setMaximum(Con.maxim)
+                button.setText("Cancel")
+                self.conversion_thread = Best_screening.Conversions(NLE, logs, folder_text, index)
+                self.conversion_thread.Maximum(logs)
+                bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
 
-                for log in Con.conversions(NLE, logs, folder_text, index):
-                    bar.setValue(Con.contator)
+                self.conversion_thread.progress.connect(bar.setValue)
+                self.conversion_thread.start()
+                self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
             except Exception as e:
                 QMessageBox.critical(self, "Error 4_3-2", e)
-            
+                button.setText(text_on)
+
         else:
             QMessageBox.critical(self, "Error 4_3-1", "Please fill in all fields")
     
@@ -1882,7 +1905,7 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Predict")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_44(label_path, MyLE, Combo, ProgresBar))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Predict", self.conversion_to_pdbqt_44, PButton, label_path, MyLE, Combo, ProgresBar))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -1943,7 +1966,7 @@ class MainWindow(QMainWindow):
         layout.addItem(spacer_bottom)
         self.page_44.setLayout(layout)
     
-    def conversion_to_pdbqt_44(self, file_path, des_folder, Combo, bar):
+    def conversion_to_pdbqt_44(self, text_on, button, file_path, des_folder, Combo, bar):
 
         file_path = file_path.text()
         folder_text = des_folder.text() if des_folder.text() != "" else "BBB predictions"
@@ -1954,38 +1977,38 @@ class MainWindow(QMainWindow):
             
             if Combo == 0:
                 try:
-                    Con = Consensus_model_for_smi.Conversions()
-                    Con.Maximum(file_path)
-                    bar.setMaximum(Con.maxim)
+                    button.setText("Cancel")
+                    self.conversion_thread = Consensus_model_for_smi.Conversions(file_path, folder_text)
+                    self.conversion_thread.Maximum(file_path)
+                    bar.setMaximum(self.conversion_thread.maxim)
                     bar.setValue(0)
 
-                    try:
-                        for smile in Con.conversions(file_path, folder_text):
-                            bar.setValue(Con.contator)
-                    except Exception as e:
-                        QMessageBox.critical(self, "Error 4_4-4", str(e))                 
-                    
+                    self.conversion_thread.progress.connect(bar.setValue)
+                    self.conversion_thread.start()
+                    self.conversion_thread.finished.connect(lambda: button.setText(text_on))     
+                        
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 4_4-5", e)
+                    QMessageBox.critical(self, "Error 4_4-5", str(e))
+                    button.setText(text_on)
 
             
             elif Combo == 1:
                 try:
-                    Con = Consensus_model_for_txt.Conversions()
-                    Con.Maximum(file_path)
-                    bar.setMaximum(Con.maxim)
+                    button.setText("Cancel")
+                    self.conversion_thread = Consensus_model_for_txt.Conversions(file_path, folder_text)
+                    self.conversion_thread.Maximum(file_path)
+                    bar.setMaximum(self.conversion_thread.maxim)
+                    bar.setValue(0)
 
-                    try:
-                        for smile in Con.conversions(file_path, folder_text):
-                            bar.setValue(Con.contator)
-                    except Exception as e:
-                        QMessageBox.critical(self, "Error 4_4-3", str(e))                 
+                    self.conversion_thread.progress.connect(bar.setValue)
+                    self.conversion_thread.start()
+                    self.conversion_thread.finished.connect(lambda: button.setText(text_on))            
                     
                 except Exception as e:
-                    QMessageBox.critical(self, "Error 4_4-2", e)
+                    QMessageBox.critical(self, "Error 4_4-5", str(e))
             
         else:
-            QMessageBox.critical(self, "Error 4_4-2", "Please fill in all fields")
+            QMessageBox.critical(self, "Error 4_4-5", "Please fill in all fields")
 
     def get_file_filter_44(self, combo):
         if combo.currentIndex() == 0:
@@ -2061,8 +2084,8 @@ class MainWindow(QMainWindow):
         
 
         # PushButton
-        PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.conversion_to_pdbqt_45(label_path, ligands_path, MyLE, ProgresBar))
+        PButton = CustomButton("Predict")
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Predict", self.conversion_to_pdbqt_45, PButton, label_path, ligands_path, MyLE, ProgresBar))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -2122,7 +2145,7 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_45.setLayout(layout)
     
-    def conversion_to_pdbqt_45(self, file_1, file_2, folder_LineEdit, bar):
+    def conversion_to_pdbqt_45(self, text_on, button, file_1, file_2, folder_LineEdit, bar):
         
         # Recovery the text
         Prot_file = file_1.text()
@@ -2132,18 +2155,22 @@ class MainWindow(QMainWindow):
         if os.path.isfile(Prot_file) and os.path.isdir(Ligands_folder):
             
             try:
-                Con = Interactions.Conversions()
-                Con.Maximum(Ligands_folder)
-                bar.setMaximum(Con.maxim)
+                button.setText("Cancel")
+                self.conversion_thread = Interactions.Conversions(Prot_file, Ligands_folder, folder_text)
+                self.conversion_thread .Maximum(Ligands_folder)
+                bar.setMaximum(self.conversion_thread .maxim)
                 bar.setValue(0)
-                for ligand in Con.conversions(Prot_file, Ligands_folder, folder_text):
-                    bar.setValue(Con.contator)
+
+                self.conversion_thread.progress.connect(bar.setValue)
+                self.conversion_thread.start()
+                self.conversion_thread.finished.connect(lambda: button.setText(text_on)) 
 
             except Exception as e:
-                QMessageBox.critical(self, "Error 4_5-1", e)
+                QMessageBox.critical(self, "Error", str(e))
+                button.setText(text_on)
             
         else:
-            QMessageBox.critical(self, "Error 4_5-2", "Please enter a correct path")
+            QMessageBox.critical(self, "Error 4_5-1", "Please enter a correct path")
     
     def setup_page46(self):
 
@@ -2278,7 +2305,6 @@ class MainWindow(QMainWindow):
     def page_45_signal(self):
         self.main_stack.setCurrentIndex(3)
         self.page_4_stack.setCurrentIndex(4)
-
 
        
 if __name__ == "__main__":
