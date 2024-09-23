@@ -37,8 +37,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # "------------------------- ESTABLISH THE MAIN ATTRIBUTES -------------------------"
+        # "------------------------------ ESTABLISH THE MAIN ATTRIBUTES -------------------------"
 
+        """ These variables are related to the function of closing the windows 
+        associated with the buttons"""
 
         # Simulated clicks between windows
         self.ws_1 = False
@@ -59,10 +61,10 @@ class MainWindow(QMainWindow):
 
         # ------------------------- MAIN FRAME SETTINGS -------------------------"
 
+        # Establish the main frame
+        self.main_frame = QFrame() 
 
-        self.main_frame = QFrame() # Establish the main frame
-
-        # Create the new frames and the layout
+        # Create the new frames and the layout and and set their settings
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(0, 0, 0, 0) 
         self.main_layout.setSpacing(0)
@@ -81,19 +83,19 @@ class MainWindow(QMainWindow):
         self.up_layout.setContentsMargins(30, 0, 30, 0) 
         self.up_layout.setSpacing(30)
 
-        # Create the PushButtons
+        # Create the principal PushButtons
         self.button1 = CustomTriangleButton("Lig. Prep  ")
         self.button2 = CustomTriangleButton("Rec. Prep  ")
         self.button3 = CustomTriangleButton("Docking  ")
         self.button4 = CustomTriangleButton("Analysis  ")
 
-        # Add buttons to the layout
+        # Add buttons to the up layout
         self.up_layout.addWidget(self.button1)
         self.up_layout.addWidget(self.button2)
         self.up_layout.addWidget(self.button3)
         self.up_layout.addWidget(self.button4)
         
-        # Add the layout to the frame
+        # Add the layout to the up frame
         self.up_frame.setLayout(self.up_layout)
 
         # ------------------------- ESTABLISH BUTTON ICONS -------------------------"
@@ -129,7 +131,7 @@ class MainWindow(QMainWindow):
         # ------------------------- CREATE THE MAIN STACKED WIDGET -------------------------"
         
 
-        # Create the stacked widget
+        # Create the bottom stacked widget
         self.main_stack = QStackedWidget()
         self.page1 = QWidget()
         self.page2 = QWidget()
@@ -139,6 +141,8 @@ class MainWindow(QMainWindow):
         self.main_stack.addWidget(self.page2)
         self.main_stack.addWidget(self.page3)
         self.main_stack.addWidget(self.page4)
+
+        # Establish the elements for the pages
         self.setup_page1()
         self.setup_page2()
         self.setup_page3()
@@ -155,7 +159,7 @@ class MainWindow(QMainWindow):
         # Establish the layout
         self.bottom_frame.setLayout(self.bottom_layout)
 
-        # ------------------------- ESTABLISH THE STYLES -------------------------"
+        # ------------------------- ESTABLISH THE MAIN STYLES -------------------------"
         self.up_frame.setStyleSheet("""
          QFrame {
                 border-top: none;
@@ -175,8 +179,9 @@ class MainWindow(QMainWindow):
         
         # ------------------------- ESTABLISH THE DROPDOWNWINDOW INSTANCES -------------------------"
         
+        """ Settings related to windows that pop up after clicking the main buttons """
 
-        # Drop declarations
+
         self.dropdown_1 = DropdownWindow1(self)
         self.dropdown_1.button1Clicked.connect(self.page_11_signal)
         self.dropdown_1.button2Clicked.connect(self.page_12_signal)
@@ -220,6 +225,8 @@ class MainWindow(QMainWindow):
 
         # ------------------------- DROPSHOW FUNCTIONS -------------------------"
 
+        """ Settings related to detecting if a part other than the 
+        popup window was clicked to close it """
 
     def show_dropdown_1(self):
         if not self.ws_1:
@@ -227,7 +234,6 @@ class MainWindow(QMainWindow):
             button_pos = self.button1.mapToGlobal(button_rect.bottomLeft())
             self.dropdown_1.move(button_pos)
             self.dropdown_1.show(self.button1)
-    
     
     def show_dropdown_2(self):
         if not self.ws_2:
@@ -299,9 +305,9 @@ class MainWindow(QMainWindow):
         page1_layout.addWidget(self.page_1_stack)
         self.page1.setLayout(page1_layout)
 
-
-
     def setup_page11(self):
+
+        #--------------------------------- Create items  ---------------------------------
 
         #Principal layout 
         layout = QVBoxLayout()
@@ -330,10 +336,8 @@ class MainWindow(QMainWindow):
         # File Format Spacer 2
         FFS2 = QSpacerItem(1000, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
         
-
         # HCombolayout
         HCombolayout = QHBoxLayout()
-
 
         # File path
         label_file = CustomLabel("File Path: ")
@@ -363,12 +367,10 @@ class MainWindow(QMainWindow):
         validator = QRegularExpressionValidator(QRegularExpression("^[A-Za-z ]*$"))
         MyLE.setValidator(validator)
 
-
         # PushButton
         PButton = CustomButton("Convert")
         PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Convert", self.conversion_to_pdbqt_11, PButton, label_path, ProgresBar, Combo, MyLE))
         PButton.setFixedWidth(300)
-
 
         # Progress Bar
         ProgresBar = QProgressBar()
@@ -378,7 +380,7 @@ class MainWindow(QMainWindow):
         spacer_bottom = QSpacerItem(10, 600, QSizePolicy.Expanding, QSizePolicy.Expanding)
 
 
-        #  ------------- Add Items -------------
+        #  --------------------------------- Add Items ---------------------------------
 
         # Title layout
         title_layout.addItem(TSL)
@@ -422,7 +424,12 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_11.setLayout(layout)
     
+
     def conversion_to_pdbqt_11(self, text_on, button, label, bar, combo, LineEdit):
+
+        """ Function that aims to receive the graphic elements 
+        of page 11 to perform the respective conversions to the PDBQT format by Meeko"""
+
         
         file_path = label.text()
         folder_text = LineEdit.text() if LineEdit.text() != "" else "PDBQT files"
@@ -446,49 +453,31 @@ class MainWindow(QMainWindow):
                     button.setText(text_on)
 
             elif (combo.currentIndex() == 1):
-                    try:
-                        
-                        # Cambiar el texto del botón a "Cancel"
-                        button.setText("Cancel")
+                    
+                try:
+                    button.setText("Cancel")
+                    self.conversion_thread = Create_pdbqt_by_sdf_meeko.Conversions(file_path, folder_text)
+                    self.conversion_thread.progress.connect(bar.setValue)
+                    self.conversion_thread.Maximum(file_path)
+                    bar.setMaximum(self.conversion_thread.maxim)
+                    bar.setValue(0)
+                    self.conversion_thread.start()
+                    self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
-                        # Inicializar el hilo con los parámetros
-                        self.conversion_thread = Create_pdbqt_by_sdf_meeko.Conversions(file_path, folder_text)
-
-                        # Conectar la señal de progreso a la barra
-                        self.conversion_thread.progress.connect(bar.setValue)
-
-                        # Obtener el número máximo de moléculas y configurar la barra de progreso
-                        self.conversion_thread.Maximum(file_path)
-                        bar.setMaximum(self.conversion_thread.maxim)
-                        bar.setValue(0)
-
-                        # Iniciar el hilo
-                        self.conversion_thread.start()
-
-                        # Cambiar el texto del botón al finalizar
-                        self.conversion_thread.finished.connect(lambda: button.setText(text_on))
-
-                    except Exception as e:
-                        QMessageBox.critical(self, "Error", str(e))
-                        button.setText(text_on)
+                except Exception as e:
+                    QMessageBox.critical(self, "Error", str(e))
+                    button.setText(text_on)
 
             elif (combo.currentIndex() == 2):
+
                 try:
                     button.setText("Cancel")
                     self.conversion_thread = Create_pdbqt_by_txt_meeko.Conversions(file_path, folder_text)
-                    
-                    # Conectar la señal de progreso a la barra
                     self.conversion_thread.progress.connect(bar.setValue)
-                    
-                    # Obtener el número máximo de elementos
                     self.conversion_thread.Maximum(label.text())
                     bar.setMaximum(self.conversion_thread.maximum)
                     bar.setValue(0)
-                    
-                    # Iniciar el hilo
                     self.conversion_thread.start()
-
-                    # Cambiar el texto del botón al finalizar
                     self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
                 except Exception as e:
@@ -509,7 +498,7 @@ class MainWindow(QMainWindow):
 
     def setup_page12(self):
 
-        #  ------------- Create items -------------
+        #  -------------------------- Create items --------------------------
 
         # Create the layout
         layout = QVBoxLayout()
@@ -575,7 +564,7 @@ class MainWindow(QMainWindow):
         spacer_bottom = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
 
-        #  ------------- Add Items -------------
+        #  ---------------------------------- Add Items ----------------------------------
         
         # Add title
         title_layout.addItem(TSL)
@@ -621,6 +610,9 @@ class MainWindow(QMainWindow):
         self.page_12.setLayout(layout)
 
     def conversion_to_pdbqt_12(self, text_on, button, label, bar, combo, LineEdit):
+
+        """ Function that aims to receive the graphic elements 
+        of page 11 to perform the respective conversions to the PDBQT format by Obabel"""
         
         file_path = label.text()
         folder_text = LineEdit.text() if LineEdit.text() != "" else "PDBQT files"
@@ -632,19 +624,11 @@ class MainWindow(QMainWindow):
                 try:
                     button.setText("Cancel")
                     self.conversion_thread = Create_pdbqt_by_smi_obabel.Conversions(file_path, folder_text)
-                    
-                    # Conectar la señal de progreso a la barra
                     self.conversion_thread.progress.connect(bar.setValue)
-                    
-                    # Obtener el número máximo de elementos
                     self.conversion_thread.Maximum(file_path)
                     bar.setMaximum(self.conversion_thread.maxim)
                     bar.setValue(0)
-                    
-                    # Iniciar el hilo
                     self.conversion_thread.start()
-
-                    # Cambiar el texto del botón al finalizar
                     self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
                 except Exception as e:
@@ -655,19 +639,11 @@ class MainWindow(QMainWindow):
                 try:
                     button.setText("Cancel")
                     self.conversion_thread = Create_pdbqt_by_sdf_obabel.Conversions(file_path, folder_text)
-
-                    # Conectar la señal de progreso a la barra
                     self.conversion_thread.progress.connect(bar.setValue)
-
-                    # Obtener el número máximo de elementos
                     self.conversion_thread.Maximum(file_path)
                     bar.setMaximum(self.conversion_thread.maxim)
                     bar.setValue(0)
-
-                    # Iniciar el hilo
                     self.conversion_thread.start()
-
-                    # Cambiar el texto del botón al finalizar
                     self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
                 except Exception as e:
@@ -679,25 +655,16 @@ class MainWindow(QMainWindow):
                 try:
                     button.setText("Cancel")
                     self.conversion_thread = Create_pdbqt_by_txt_obabel.Conversions(file_path, folder_text)
-
-                    # Conectar la señal de progreso a la barra
                     self.conversion_thread.progress.connect(bar.setValue)
-
-                    # Obtener el número máximo de elementos
                     self.conversion_thread.Maximum(file_path)
                     bar.setMaximum(self.conversion_thread.maxim)
                     bar.setValue(0)
-
-                    # Iniciar el hilo
                     self.conversion_thread.start()
-
-                    # Cambiar el texto del botón al finalizar
                     self.conversion_thread.finished.connect(lambda: button.setText(text_on))
 
                 except Exception as e:
                     QMessageBox.critical(self, "Error", str(e))
                     button.setText(text_on)
-
 
         else:
             QMessageBox.critical(self, "Error 1_2-1", "Please, introduce a correct file path.")
@@ -738,7 +705,7 @@ class MainWindow(QMainWindow):
 
     def setup_page21(self):
 
-        #  ------------- Create items -------------
+        #  ---------------------------------- Create items ----------------------------------
 
         # Create the layout
         layout = QVBoxLayout()
@@ -847,6 +814,9 @@ class MainWindow(QMainWindow):
         self.page_21.setLayout(layout)
 
     def conversion_to_pdbqt_21(self, text_on, button, label, bar, LineEdit, CheckBox):
+
+        """ Function that accepts graphical elements and extracts their useful 
+        information with the aim of transforming proteins from a PDB format to PDBQT using openbabel"""
         
         file_path = label.text()
         folder_text = LineEdit.text() if LineEdit.text() != "" else "PDBQT files"
@@ -857,27 +827,22 @@ class MainWindow(QMainWindow):
             try:
                 button.setText("Cancel")
                 self.conversion_thread = Create_protein_pdbqt_by_obabel.Conversions(file_path, folder_text, status)
-
-                # Conectar la señal de progreso a la barra
                 self.conversion_thread.progress.connect(bar.setValue)
                 self.conversion_thread.finished.connect(lambda: button.setText(text_on))
-
-                # Obtener el número máximo de elementos
                 self.conversion_thread.Maximum(file_path)
                 bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
                 list_chains = []
 
-                # Obtener las proteínas y cadenas
+
                 self.conversion_thread.get_proteins(file_path)
                 list_proteins = self.conversion_thread.proteins
 
                 for pdb_file in self.conversion_thread.Chains(file_path):
-                    if not self.conversion_thread._running:  # Verificar si el hilo está corriendo
+                    if not self.conversion_thread._running:
                         break
                     list_chains.append(self.conversion_thread.chains)
 
-                # Aquí puedes mostrar el diálogo antes de iniciar el hilo
                 for i, chain in enumerate(list_chains):
                     if not self.conversion_thread._running:
                         break
@@ -889,10 +854,8 @@ class MainWindow(QMainWindow):
                     else:
                         self.conversion_thread.selected_chains = chain
 
-                # Iniciar el hilo después de haber establecido las cadenas seleccionadas
                 self.conversion_thread.start()
                     
-
             except Exception as e:
                 QMessageBox.critical(self, "Error", e)
         
@@ -904,7 +867,7 @@ class MainWindow(QMainWindow):
 
     def setup_page3(self):
 
-        #  ------------- Create items -------------
+        #  -------------------------------- Create items --------------------------------
 
         # Establish the stacked widget
         self.page_3_stack = QStackedWidget()
@@ -932,7 +895,6 @@ class MainWindow(QMainWindow):
 
     def setup_page31(self):
 
-        
         # Create the layout
         layout = QVBoxLayout()
 
@@ -1028,7 +990,22 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Do docking")
-        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Do docking", self.conversion_to_pdbqt_31, PButton, label_path, ligands_path, MyLE, XLE, YLE, ZLE, X_SLE, Y_SLE, Z_SLE, ProgresBar, Combo))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, 
+                                                                 "Do docking", 
+                                                                 self.conversion_to_pdbqt_31, 
+                                                                 PButton, 
+                                                                 label_path, 
+                                                                 ligands_path, 
+                                                                 MyLE, 
+                                                                 XLE, 
+                                                                 YLE, 
+                                                                 ZLE, 
+                                                                 X_SLE, 
+                                                                 Y_SLE, 
+                                                                 Z_SLE, 
+                                                                 ProgresBar, 
+                                                                 Combo))
+        
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -1043,7 +1020,7 @@ class MainWindow(QMainWindow):
         # Bottom Spacer
         spacer_bottom = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        #  ------------------------- Add Items -------------------------
+        #  ------------------------------- Add Items -------------------------------
 
         # Add the title
         title_layout.addItem(TSL)
@@ -1117,7 +1094,23 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_31.setLayout(layout) 
 
-    def conversion_to_pdbqt_31(self, text_on, button, protein_label, ligand_label, folder_LineEdit, X_LE, Y_LE, Z_LE, XS_LE, YS_LE, ZS_LE, bar, combo):
+    def conversion_to_pdbqt_31(self, 
+                               text_on, 
+                               button, 
+                               protein_label, 
+                               ligand_label, 
+                               folder_LineEdit, 
+                               X_LE, 
+                               Y_LE, 
+                               Z_LE, 
+                               XS_LE, 
+                               YS_LE, 
+                               ZS_LE, 
+                               bar, 
+                               combo):
+
+        """Function that accepts graphic elements and extracts their useful information 
+        with the aim of performing molecular docking in a simpler way using smina"""
         
         # Recovery the text
         protein_path = protein_label.text()
@@ -1135,16 +1128,24 @@ class MainWindow(QMainWindow):
             
             try:
                 button.setText("Cancel")
-                self.conversion_thread = Docking_with_smina.Conversions(protein_path, ligand_path, folder_text, X, Y, Z, XS, YS, ZS, combo_index)
+                self.conversion_thread = Docking_with_smina.Conversions(protein_path, 
+                                                                        ligand_path, 
+                                                                        folder_text, 
+                                                                        X, 
+                                                                        Y, 
+                                                                        Z, 
+                                                                        XS, 
+                                                                        YS, 
+                                                                        ZS, 
+                                                                        combo_index)
+                
                 self.conversion_thread.Maximum(ligand_path)
                 bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
-                # Conectar la señal de progreso a la barra
                 self.conversion_thread.progress.connect(bar.setValue)
                 self.conversion_thread.start()
                 self.conversion_thread.finished.connect(lambda: button.setText(text_on))
             
-
             except Exception as e:
                 QMessageBox.critical(self, "Error", str(e))
                 button.setText(text_on)
@@ -1154,6 +1155,8 @@ class MainWindow(QMainWindow):
 
 
     def setup_page32(self):
+
+        # -------------------------------- Create items --------------------------------
 
         # Create the layout
         layout = QVBoxLayout()
@@ -1179,7 +1182,8 @@ class MainWindow(QMainWindow):
         Button_path = QPushButton("...")
         Button_path.setFixedWidth(40)
         Button_path.setFixedHeight(40)
-        Button_path.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", label_path))
+        Button_path.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", 
+                                                                  label_path))
 
         # Horizontal layout
         Hlayout = QHBoxLayout()
@@ -1196,7 +1200,8 @@ class MainWindow(QMainWindow):
         Button_lpath = QPushButton("...")
         Button_lpath.setFixedWidth(40)
         Button_lpath.setFixedHeight(40)
-        Button_lpath.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", ligands_path))
+        Button_lpath.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", 
+                                                                   ligands_path))
 
         # Horizontal ligand layout
         hligandlayout = QHBoxLayout()
@@ -1229,7 +1234,13 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Do docking")
-        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Do docking", self.conversion_to_pdbqt_32, PButton, label_path, ligands_path, MyLE, ProgresBar, Combo))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Do docking", 
+                                                                 self.conversion_to_pdbqt_32, 
+                                                                 PButton, label_path, 
+                                                                 ligands_path, 
+                                                                 MyLE, 
+                                                                 ProgresBar, 
+                                                                 Combo))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -1297,7 +1308,18 @@ class MainWindow(QMainWindow):
         # Set layout
         self.page_32.setLayout(layout)
 
-    def conversion_to_pdbqt_32(self, text_on, button, protein_label, ligand_label, folder_LineEdit, bar, combo):
+    def conversion_to_pdbqt_32(self, 
+                               text_on, 
+                               button, 
+                               protein_label, 
+                               ligand_label, 
+                               folder_LineEdit, 
+                               bar, 
+                               combo):
+        
+        """ Function that accepts graphic elements and extracts their useful information with the aim 
+        of performing a re docking automatically because it calculates the coordinates 
+        and the size of the box automatically, the docking is done with smina"""
         
         # Recovery the text
         protein_path = protein_label.text()
@@ -1328,10 +1350,12 @@ class MainWindow(QMainWindow):
 
     def setup_page33(self):
 
+        # Under construction
+
         layout = QVBoxLayout()
-        label = CustomLabel("Este es un QLabel en la Página 33")
+        label = CustomLabel("")
         CB = CustomCheckBox()
-        button = QPushButton("Este es un QPushButton en la Página 33") 
+        button = QPushButton("") 
         layout.addWidget(label)
         layout.addWidget(CB)
         layout.addWidget(button)
@@ -1385,6 +1409,8 @@ class MainWindow(QMainWindow):
 
     def setup_page41(self):
 
+        # ---------------------------------- Create the items ----------------------------------
+
         #Principal layout 
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 0, 20, 0)
@@ -1398,14 +1424,11 @@ class MainWindow(QMainWindow):
         TSL = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
         TSR = QSpacerItem(10000, 100, QSizePolicy.Maximum, QSizePolicy.Maximum)
 
-
         # File Format Spacer 2
         FFS2 = QSpacerItem(1000, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
         
-
         # HCombolayout
         HCombolayout = QHBoxLayout()
-
 
         # File path
         label_file = CustomLabel("File Path: ")
@@ -1438,9 +1461,15 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Split")
-        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Split", self.conversion_to_pdbqt_41, PButton, label_path, MyLE, ProgresBar))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, 
+                                                                 "Split", 
+                                                                 self.conversion_to_pdbqt_41, 
+                                                                 PButton, 
+                                                                 label_path, 
+                                                                 MyLE, 
+                                                                 ProgresBar))
+                                                                
         PButton.setFixedWidth(300)
-
 
         # Progress Bar
         ProgresBar = QProgressBar()
@@ -1449,7 +1478,7 @@ class MainWindow(QMainWindow):
         # bottom Spacer
         spacer_bottom = QSpacerItem(10, 600, QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        #  ------------- Add Items -------------
+        #  ------------------------------------ Add Items ------------------------------------
 
         # Title layout
         title_layout.addItem(TSL)
@@ -1492,8 +1521,11 @@ class MainWindow(QMainWindow):
 
 
     def conversion_to_pdbqt_41(self, text_on, button, file_folder, folder_LineEdit, bar):
+
+        """ Function that collects graphical elements and extracts their useful 
+        information with the aim of converting pdbqt files with all the molecular 
+        docking poses into 1 pdbqt file per pose"""
         
-        # Recovery the text
         ligands = file_folder.text()
         folder_text = folder_LineEdit.text() if folder_LineEdit.text() != "" else "Split files"
 
@@ -1505,13 +1537,9 @@ class MainWindow(QMainWindow):
                 self.conversion_thread.Maximum(ligands)
                 bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
-
-                # Conectar la señal de progreso a la barra
                 self.conversion_thread.progress.connect(bar.setValue)
-                
                 self.conversion_thread.start()
                 self.conversion_thread.finished.connect(lambda: button.setText(text_on))
-
 
             except Exception as e:
                 QMessageBox.critical(self, "Error 4_1-2", str(e))
@@ -1522,6 +1550,8 @@ class MainWindow(QMainWindow):
 
 
     def setup_page42(self):
+
+        # -------------------------------- Create items --------------------------------
 
         # Create the layout
         layout = QVBoxLayout()
@@ -1547,7 +1577,8 @@ class MainWindow(QMainWindow):
         Button_path = QPushButton("...")
         Button_path.setFixedWidth(40)
         Button_path.setFixedHeight(40)
-        Button_path.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", label_path))
+        Button_path.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", 
+                                                                  label_path))
 
         # Horizontal layout
         Hlayout = QHBoxLayout()
@@ -1564,7 +1595,8 @@ class MainWindow(QMainWindow):
         Button_lpath = QPushButton("...")
         Button_lpath.setFixedWidth(40)
         Button_lpath.setFixedHeight(40)
-        Button_lpath.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", ligands_path))
+        Button_lpath.clicked.connect(lambda: self.open_file_dialog("pdbqt files (*.pdbqt);;All files (*)", 
+                                                                   ligands_path))
 
         # Horizontal ligand layout
         hligandlayout = QHBoxLayout()
@@ -1590,7 +1622,14 @@ class MainWindow(QMainWindow):
 
         # PushButton
         PButton = CustomButton("Convert")
-        PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Convert", self.conversion_to_pdbqt_42, PButton, label_path, ligands_path, MyLE, ProgresBar))
+        PButton.clicked.connect(lambda: self.handle_button_click(PButton, 
+                                                                 "Convert", 
+                                                                 self.conversion_to_pdbqt_42, 
+                                                                 PButton, 
+                                                                 label_path, 
+                                                                 ligands_path, 
+                                                                 MyLE, 
+                                                                 ProgresBar))
         PButton.setFixedWidth(300)
 
         # Progress Bar
@@ -1651,8 +1690,10 @@ class MainWindow(QMainWindow):
         self.page_42.setLayout(layout)
     
     def conversion_to_pdbqt_42(self, text_on, button, file_1, file_2, folder_LineEdit, bar):
+
+        """ Function that collects graphical elements and extracts their useful 
+        information in order to calculate the RMSD between two small molecules using DockRMSD"""
         
-        # Recovery the text
         file_1 = file_1.text()
         file_2 = file_2.text()
         folder_text = folder_LineEdit.text() if folder_LineEdit.text() != "" else "RMSD file"
@@ -1665,16 +1706,10 @@ class MainWindow(QMainWindow):
                 self.conversion_thread.Maximum()
                 bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
-
-                # Conectar la señal de progreso a la barra
                 self.conversion_thread.progress.connect(bar.setValue)
-
                 self.conversion_thread.start()
-
                 self.conversion_thread.finished.connect(lambda: button.setText(text_on))
                 
-
-
             except Exception as e:
                 QMessageBox.critical(self, "Error", str(e))
                 button.setText(text_on)
@@ -1684,7 +1719,7 @@ class MainWindow(QMainWindow):
     
     def setup_page43(self):
 
-        #  ------------- Create items -------------
+        #  -------------------------------------- Create items --------------------------------------
 
         # Create the layout
         layout = QVBoxLayout()
@@ -1758,7 +1793,7 @@ class MainWindow(QMainWindow):
         spacer_bottom = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
 
-        #  ------------- Add Items -------------
+        #  --------------------------------------- Add Items ---------------------------------------
         
         # Add title
         title_layout.addItem(TSL)
@@ -1783,14 +1818,12 @@ class MainWindow(QMainWindow):
         layout.addItem(HComboNlayout)
         layout.addSpacing(30)
 
-
         # Horizontal label path and button path layout
         layout.addWidget(label_file)
         Hlayout.addWidget(label_path)
         Hlayout.addWidget(Button_path)
         layout.addItem(Hlayout)
         layout.addSpacing(30)
-
 
         # Add the line edit
         layout.addWidget(TextLE)
@@ -1808,14 +1841,15 @@ class MainWindow(QMainWindow):
         layout.addWidget(ProgresBar)
         layout.addItem(spacer_bottom)
 
-        
         # Set layout and final spacer
         layout.addItem(spacer_bottom)
         self.page_43.setLayout(layout)
     
     def conversion_to_pdbqt_43(self, text_on, button, NLE, logs_folder, des_folder, Combo, bar):
+
+        """ Function that collects graphic elements and extracts their useful 
+        information with the aim of extracting the best poses from a large set of logs"""
         
-        # Recovery the text
         NLE = NLE.text()
         logs = logs_folder.text()
         folder_text = des_folder.text() if des_folder.text() != "" else "Screening folder"
@@ -1829,7 +1863,6 @@ class MainWindow(QMainWindow):
                 self.conversion_thread.Maximum(logs)
                 bar.setMaximum(self.conversion_thread.maxim)
                 bar.setValue(0)
-
                 self.conversion_thread.progress.connect(bar.setValue)
                 self.conversion_thread.start()
                 self.conversion_thread.finished.connect(lambda: button.setText(text_on))
@@ -1856,7 +1889,7 @@ class MainWindow(QMainWindow):
     
     def setup_page44(self):
 
-        #  ------------- Create items -------------
+        #  ----------------------------------- Create items -----------------------------------
 
         # Create the layout
         layout = QVBoxLayout()
@@ -1921,7 +1954,7 @@ class MainWindow(QMainWindow):
         spacer_bottom = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
 
-        #  ------------- Add Items -------------
+        #  --------------------------------------- Add Items -------------
         
         # Add title
         title_layout.addItem(TSL)
@@ -1968,11 +2001,13 @@ class MainWindow(QMainWindow):
     
     def conversion_to_pdbqt_44(self, text_on, button, file_path, des_folder, Combo, bar):
 
+        """ Function that collects graphic elements and extracts their useful 
+        information in order to make BBB predictions"""
+
         file_path = file_path.text()
         folder_text = des_folder.text() if des_folder.text() != "" else "BBB predictions"
         Combo = Combo.currentIndex()
         
-
         if os.path.isfile(file_path):
             
             if Combo == 0:
@@ -1991,7 +2026,6 @@ class MainWindow(QMainWindow):
                     QMessageBox.critical(self, "Error 4_4-5", str(e))
                     button.setText(text_on)
 
-            
             elif Combo == 1:
                 try:
                     button.setText("Cancel")
@@ -2018,7 +2052,7 @@ class MainWindow(QMainWindow):
     
     def setup_page45(self):
 
-         # Create the layout
+        # Create the layout
         layout = QVBoxLayout()
 
         # Description label
@@ -2077,12 +2111,10 @@ class MainWindow(QMainWindow):
         # Validator for numbers
         size_validator = QRegularExpressionValidator(QRegularExpression("^-?[0-9]*\\.?[0-9]+$"))
 
-
         # Label of Combo Box
         label_combo = CustomLabel("Scoring: ")
         label_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         
-
         # PushButton
         PButton = CustomButton("Predict")
         PButton.clicked.connect(lambda: self.handle_button_click(PButton, "Predict", self.conversion_to_pdbqt_45, PButton, label_path, ligands_path, MyLE, ProgresBar))
@@ -2146,8 +2178,11 @@ class MainWindow(QMainWindow):
         self.page_45.setLayout(layout)
     
     def conversion_to_pdbqt_45(self, text_on, button, file_1, file_2, folder_LineEdit, bar):
+
+        """ Function that collects graphical elements and extracts their useful 
+        information in order to determine the interactions of ligands with their 
+        respective protein using prolif"""
         
-        # Recovery the text
         Prot_file = file_1.text()
         Ligands_folder = file_2.text()
         folder_text = folder_LineEdit.text() if folder_LineEdit.text() != "" else "Interactions files"
@@ -2160,7 +2195,6 @@ class MainWindow(QMainWindow):
                 self.conversion_thread .Maximum(Ligands_folder)
                 bar.setMaximum(self.conversion_thread .maxim)
                 bar.setValue(0)
-
                 self.conversion_thread.progress.connect(bar.setValue)
                 self.conversion_thread.start()
                 self.conversion_thread.finished.connect(lambda: button.setText(text_on)) 
@@ -2174,10 +2208,11 @@ class MainWindow(QMainWindow):
     
     def setup_page46(self):
 
+        # Under construction
         layout = QVBoxLayout()
-        label = CustomLabel("Este es un QLabel en la Página 46")
+        label = CustomLabel("")
         CB = CustomCheckBox()
-        button = QPushButton("Este es un QPushButton en la Página 46") 
+        button = QPushButton("") 
         layout.addWidget(label)
         layout.addWidget(CB)
         layout.addWidget(button)
@@ -2185,10 +2220,11 @@ class MainWindow(QMainWindow):
     
     def setup_page47(self):
 
+        # Under construction
         layout = QVBoxLayout()
-        label = CustomLabel("Este es un QLabel en la Página 47")
+        label = CustomLabel("")
         CB = CustomCheckBox()
-        button = QPushButton("Este es un QPushButton en la Página 47") 
+        button = QPushButton("") 
         layout.addWidget(label)
         layout.addWidget(CB)
         layout.addWidget(button)
@@ -2196,10 +2232,11 @@ class MainWindow(QMainWindow):
     
     def setup_page48(self):
 
+        # Under construction
         layout = QVBoxLayout()
-        label = CustomLabel("Este es un QLabel en la Página 48")
+        label = CustomLabel("")
         CB = CustomCheckBox()
-        button = QPushButton("Este es un QPushButton en la Página 48") 
+        button = QPushButton("") 
         layout.addWidget(label)
         layout.addWidget(CB)
         layout.addWidget(button)
@@ -2229,38 +2266,36 @@ class MainWindow(QMainWindow):
         label.setText(folder_path)
 
     # ---------------------------------- HANDLE OPTIONS ----------------------------------"
+
+    """ Functions related to canceling scripts """
     
     def handle_button_click(self, button, text_on, function, *args):
         if button.text() == text_on:
-            function(text_on, *args)  # Llama a la función con los argumentos pasados
+            function(text_on, *args) 
         elif button.text() == "Cancel":
             self.cancel_conversion(button, text_on)
     
     def cancel_conversion(self, button, text_on):
         if self.conversion_thread and self.conversion_thread.isRunning():
-            # Detener el hilo de manera segura
+
             self.conversion_thread.stop()
             button.setEnabled(False)
-            self.conversion_thread.wait()  # Esperar hasta que el hilo termine
+            self.conversion_thread.wait()
 
-            # Cambiar el estado del botón después de que el hilo termine
             self.is_converting = False
             button.setText(text_on)
             button.setEnabled(True)
 
     def closeEvent(self, event):
-        """
-        Este método se activa cuando la ventana se cierra.
-        Asegura que el hilo se detenga correctamente antes de cerrar la aplicación.
-        """
-        event.accept()  # Aceptar el evento y cerrar la ventana
+        event.accept()
         if self.conversion_thread is not None and self.conversion_thread.isRunning():
-            # Detener el hilo de manera segura
             self.conversion_thread.stop()
-            self.conversion_thread.wait()  # Esperar hasta que termine el hilo
-        event.accept()  # Aceptar el evento de cierre
+            self.conversion_thread.wait()
+        event.accept()
 
     # ------------------------- ESTABLISH THE PAGES DIRECTIONS -------------------------"
+
+    """ Functions related to changing the page currently displayed on the screen """
 
     def page_11_signal(self):
         self.main_stack.setCurrentIndex(0)
@@ -2306,7 +2341,6 @@ class MainWindow(QMainWindow):
         self.main_stack.setCurrentIndex(3)
         self.page_4_stack.setCurrentIndex(4)
 
-       
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()

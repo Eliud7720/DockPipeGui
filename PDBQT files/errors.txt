@@ -1,0 +1,4 @@
+CS102: Failed to create molecule from SMILES for ID CS102
+CS154: Failed to create molecule from SMILES for ID CS154
+CS58: Failed to create molecule from SMILES for ID CS58
+CS69: Failed to create molecule from SMILES for ID CS69
