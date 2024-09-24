@@ -6,22 +6,46 @@ from PySide6.QtCore import QThread, Signal
 
 
 class Conversions(QThread):
-    progress = Signal(int)  # Señal para actualizar la barra de progreso
-    finished = Signal()  # Señal para indicar que la conversión ha terminado
+    progress = Signal(int)
+    finished = Signal()
+
+    """
+    A function responsible for generating files in pdbqt format from a 
+    folder with proteins files on pdb format using openbabel
+    """
 
     def __init__(self, ini_folder, des_folder, save_ligands):
-        super().__init__()  # Inicializar la clase base
+
+        """
+        Initializes the Conversions class with parameters for conversion.
+
+        Parameters:
+        -----------
+        ini_folder : str
+            Path to the folder with proteins in pdb format for the conversion to pdbqt
+        des_folder : str
+            The destination folder path where the converted files will be saved.
+        save_ligands : int
+            A number that indicates if save the ligands 
+        """
+
+        super().__init__()
         self.contator = 0
         self.maxim = 0
         self.chains = []
         self.selected_chains = []
         self.proteins = []
-        self._running = True  # Control para la ejecución
+        self._running = True
         self.ini_folder = ini_folder + "/"
         self.des_folder = des_folder + "/"
         self.save_ligands = save_ligands
     
     def get_proteins(self, ini_folder):
+
+        """
+        A method that determines the proteins present in the folder
+        """
+
         ini_folder = ini_folder + "/"
         pdbs_files = glob.glob(ini_folder + '*.pdb')
 
@@ -29,8 +53,14 @@ class Conversions(QThread):
             self.proteins.append(os.path.basename(pdb))
 
     def Chains(self, ini_folder):
+
+        """
+        A method that determines the chains of each protein
+        """
+
         ini_folder = ini_folder + "/"
         pdbs_files = glob.glob(ini_folder + '*.pdb')
+
         # Read and write pdb files
         parser = PDB.PDBParser(QUIET=True)
 
@@ -46,6 +76,8 @@ class Conversions(QThread):
             yield self.chains
 
     def run(self):
+
+        # Make the destination folder
         os.makedirs(self.des_folder, exist_ok=True)
         pdbs_files = glob.glob(self.ini_folder + '*.pdb')
 
@@ -55,7 +87,7 @@ class Conversions(QThread):
 
         for pdb in pdbs_files:
 
-            if not self._running:  # Comprobar si se debe detener
+            if not self._running:
                 break
             
             # Create the temporal file withouth the HETATM lines
@@ -134,6 +166,8 @@ class Conversions(QThread):
             io.save(temp_pdb, select=ChainSelect(self.selected_chains))
 
             final_name = self.des_folder + os.path.basename(os.path.splitext(pdb)[0]) + ".pdbqt"
+
+            # Run the command to convert the protein with the selected chains to pdbqt
             result = subprocess.run(["./lib/obabel", "-i", "pdb", temp_pdb, "-xr", "-opdbqt", "-O", final_name, "--partialcharge", "gasteiger"], capture_output=True, text=True)
             
             os.remove(temp_pdb)
@@ -149,7 +183,6 @@ class Conversions(QThread):
         self.maxim = len(pdbs_files)
     
     def stop(self):
-        """Método para detener la ejecución del hilo."""
         self._running = False
 
 class ChainSelect(PDB.Select):
@@ -157,5 +190,4 @@ class ChainSelect(PDB.Select):
         self.chains_to_select = chains_to_select
 
     def accept_chain(self, chain):
-        # Aceptar solo las cadenas en la lista seleccionada
         return chain.id in self.chains_to_select

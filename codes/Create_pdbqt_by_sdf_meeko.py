@@ -7,21 +7,38 @@ from PySide6.QtCore import QThread, Signal
 
 
 class Conversions(QThread):
-    progress = Signal(int)  # Señal para actualizar la barra de progreso
+
+    """
+    A class responsible for generating files in pdbqt format from a 
+    single file in sdf format containing several molecules in that format
+    using the Meeko library
+    """
+
+    progress = Signal(int)
 
     def __init__(self, file_path, folder_text):
+
+        """
+        Initializes the Conversions class with parameters for conversion.
+
+        Parameters:
+        -----------
+        file_path : str
+            Path to files in sdf format for the conversion to pdbqt
+        folder_text : str
+            The destination folder path where the converted files will be saved.
+        """
+
         super().__init__()
         self.file_path = file_path
         self.folder_text = folder_text
         self.errors = {}
         self.maxim = 0
-        self._running = True  # Variable para controlar el hilo
+        self._running = True
 
     def run(self):
-        """
-        Función principal responsable de realizar las conversiones.
-        """
-        # Crear lista de moléculas desde el archivo SDF
+        
+        # Create the molecules list from the SDF file
         list_molecules = []
         supplier = Chem.SDMolSupplier(self.file_path)
         for mol in supplier:
@@ -30,22 +47,22 @@ class Conversions(QThread):
 
         self.maxim = len(list_molecules)
 
-        # Crear la carpeta si no existe
+        # Make the destination folder
         os.makedirs(self.folder_text, exist_ok=True)
 
         for index, mol in enumerate(list_molecules):
-            if not self._running:  # Verificar si se debe detener el hilo
+            if not self._running:
                 break
 
-            name = str(index + 1)  # Usar el índice como nombre de archivo
+            name = str(index + 1)
 
             try:
-                # Agregar hidrógenos, embeber y optimizar la molécula
+                # Add the hydrogens and optimize the molecule
                 mol = Chem.AddHs(mol)
                 AllChem.EmbedMolecule(mol, AllChem.ETKDG())
                 AllChem.MMFFOptimizeMolecule(mol)
 
-                # Preparar la molécula y convertir a PDBQT
+                # Prepare the molecule and convert to PDBQT
                 preparator = MoleculePreparation()
                 mol_setups = preparator.prepare(mol)
                 if not mol_setups:
@@ -53,14 +70,14 @@ class Conversions(QThread):
 
                 pdbqt_string = ""
                 for setup in mol_setups:
-                    # Verificar si el retorno es una tupla
+                    # Check if the return is a tuple
                     result = PDBQTWriterLegacy.write_string(setup)
                     if isinstance(result, tuple):
                         pdbqt_string += result[0]
                     else:
                         pdbqt_string += result
 
-                # Guardar el archivo PDBQT
+                # Save the pdbqt file
                 pdbqt_path = os.path.join(self.folder_text, name + ".pdbqt")
                 with open(pdbqt_path, 'w') as archivo:
                     archivo.write(pdbqt_string)
@@ -68,10 +85,9 @@ class Conversions(QThread):
             except Exception as e:
                 self.errors[name] = str(e)
 
-            # Emitir progreso
             self.progress.emit(index + 1)
 
-        # Guardar errores en un archivo, si los hay
+        # Save the errors on a file, if there are any
         if self.errors:
             error_file_path = os.path.join(self.folder_text, "errors.txt")
             with open(error_file_path, "w") as archivo:
@@ -79,11 +95,9 @@ class Conversions(QThread):
                     archivo.write(f"{key}: {value}\n")
 
     def stop(self):
-        """Método para detener el hilo de forma segura"""
         self._running = False
 
     def Maximum(self, ruta: str):
-        """Función para contar el número máximo de moléculas en el archivo SDF"""
         list_molecules = []
         supplier = Chem.SDMolSupplier(ruta)
         for mol in supplier:

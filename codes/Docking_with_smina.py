@@ -4,10 +4,43 @@ import glob
 from PySide6.QtCore import QThread, Signal
 
 class Conversions(QThread):
-    progress = Signal(int)  # Señal para actualizar la barra de progreso
-    finished = Signal()  # Señal para indicar que la conversión ha terminado
+
+    """
+    A class responsible for carrying out molecular docking using smina in a simpler way
+    """
+
+    progress = Signal(int)
+    finished = Signal()
 
     def __init__(self, protein_file, ligands_folder, folder_text, x, y, z, sx, sy, sz, score):
+        
+        """
+        Initializes the Conversions class with parameters for conversion.
+
+        Parameters:
+        -----------
+        protein_file : str
+            Path to the file of the protein in pdbqt format
+        ligands_folder : str
+            Path to the ligands folder in pdbqt format
+        folder_text: str
+            The destination folder path where the converted files will be saved.
+        x : float
+            X center coordinates for docking
+        y : float
+            Y center coordinates for docking
+        z : float
+            Z center coordinates for docking
+        sx : float
+            x size of the box
+        sy : float
+            y size of the box
+        sz : float
+            z size of the box
+        score : int
+            The method of scoring (vina, vinardo or dkoes)
+        """
+
         super().__init__()
         self.maxim = 0
         self.contator = 0
@@ -24,7 +57,8 @@ class Conversions(QThread):
         self._running = True
     
     def run(self):
-    
+        
+        # Make the destination folder
         os.makedirs(self.des_folder, exist_ok=True)
         ligands_files = glob.glob(self.ligands + '*.pdbqt')
 
@@ -35,6 +69,7 @@ class Conversions(QThread):
         elif self.score == 2:
             self.score = "dkoes_fast"
 
+        # Create a file with the data used in case the user needs it
         with open(self.des_folder + "config.txt", "w") as file:
             file.write("----------Configuration employeed----------\n")
             file.write(f"Scoring: {self.score}\n")
@@ -46,11 +81,13 @@ class Conversions(QThread):
             file.write(f"size_z: {self.sz}")
 
         for ligand in ligands_files:
-            if not self._running:  # Verificar si se debe detener el hilo
+            if not self._running:
                 break
-
+            
+            # Recover the basename of the ligand
             basename = os.path.basename(ligand).split(".")[0]
 
+            # Command to run
             command = [
                 './lib/smina',
                 '-r', self.protein_file,
@@ -66,7 +103,7 @@ class Conversions(QThread):
                 '--scoring', self.score
                 ]
             
-            # Ejecuta el comando
+            # Run the command
             subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             self.contator +=1 
@@ -80,7 +117,6 @@ class Conversions(QThread):
         self.maxim = len(pdbs_files)
     
     def stop(self):
-        """Método para detener el hilo de forma segura"""
         self._running = False
 
     

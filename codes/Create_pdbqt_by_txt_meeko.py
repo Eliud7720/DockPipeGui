@@ -6,9 +6,27 @@ from meeko import PDBQTWriterLegacy
 from PySide6.QtCore import QThread, Signal
 
 class Conversions(QThread):
-    progress = Signal(int)  # Señal para actualizar la barra de progreso
+    progress = Signal(int)
+
+    """
+    A class responsible for generating files in pdbqt format from a 
+    single file in txt format containing several molecules in smiles format without their
+    respective ID using meeko
+    """
 
     def __init__(self, file_path, folder_text):
+
+        """
+        Initializes the Conversions class with parameters for conversion.
+
+        Parameters:
+        -----------
+        file_path : str
+            Path to files in sdf format for the conversion to pdbqt
+        folder_text : str
+            The destination folder path where the converted files will be saved.
+        """
+
         super().__init__()
         self.file_path = file_path
         self.folder_text = folder_text
@@ -17,45 +35,46 @@ class Conversions(QThread):
         self._running = True
 
     def run(self):
-        # Crear la lista de SMILES
         list_smiles = []
 
-        # Abrir el archivo
+        # Open the txt file
         with open(self.file_path, 'r') as file:
             lines = file.readlines()
 
-        # Guardar SMILES en la lista
+        # save each smile on a list
         for line in lines:
             list_smiles.append(line.split()[0])
 
         self.maximum = len(list_smiles)
 
-        # Crear la carpeta si no existe
+        # Make the destination folder
         os.makedirs(self.folder_text, exist_ok=True)
 
         for index, smile in enumerate(list_smiles):
             if not self._running:
-                break  # Detener el hilo si se ha solicitado
+                break
 
             name = str(index + 1)
             try:
-                # Convertir SMILES a molécula
+                # Convert each smile on a mol rdkit object
                 mol = Chem.MolFromSmiles(smile)
                 if mol is None:
                     raise ValueError(f"Failed to create molecule from SMILES for index {name}")
 
-                # Agregar hidrógenos, incrustar y optimizar la molécula
+                # Add hydrogens and optimize the molecule
                 mol = Chem.AddHs(mol)
                 AllChem.EmbedMolecule(mol, AllChem.ETKDG())
                 AllChem.MMFFOptimizeMolecule(mol)
 
-                # Preparar la molécula y convertir a PDBQT
+                # Prepare the molecule
                 preparator = MoleculePreparation()
                 mol_setups = preparator.prepare(mol)
                 if not mol_setups:
                     raise ValueError(f"No setups generated for index {name}")
 
                 pdbqt_string = ""
+
+                # Create the PDBQT for each molecule
                 for setup in mol_setups:
                     result = PDBQTWriterLegacy.write_string(setup)
                     if isinstance(result, tuple):
@@ -63,7 +82,7 @@ class Conversions(QThread):
                     else:
                         pdbqt_string += result
 
-                # Guardar PDBQT en archivo
+                # Save each pbdqt on a file
                 pdbqt_path = os.path.join(self.folder_text, name + ".pdbqt")
                 with open(pdbqt_path, 'w') as archivo:
                     archivo.write(pdbqt_string)
@@ -71,10 +90,9 @@ class Conversions(QThread):
             except Exception as e:
                 self.errors[name] = str(e)
 
-            # Emitir progreso
             self.progress.emit(index + 1)
 
-        # Guardar errores en un archivo
+        # Save the errors on a file
         if self.errors:
             error_file_path = os.path.join(self.folder_text, "errors.txt")
             with open(error_file_path, "w") as archivo:

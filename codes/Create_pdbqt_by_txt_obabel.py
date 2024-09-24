@@ -2,12 +2,30 @@ import subprocess
 import os
 from PySide6.QtCore import QThread, Signal
 
-class Conversions(QThread):  # Hereda de QThread
-    progress = Signal(int)  # Señal para actualizar la barra de progreso
-    finished = Signal()  # Señal para indicar que la conversión ha terminado
+class Conversions(QThread):
+    progress = Signal(int)
+    finished = Signal()
+
+    """
+    A class responsible for generating files in pdbqt format from a 
+    single file in txt format containing several molecules in smiles format without their
+    respective ID using openbabel
+    """
 
     def __init__(self, file_path, folder_text):
-        super().__init__()  # Inicializar la clase base
+
+        """
+        Initializes the Conversions class with parameters for conversion.
+
+        Parameters:
+        -----------
+        file_path : str
+            Path to files in sdf format for the conversion to pdbqt
+        folder_text : str
+            The destination folder path where the converted files will be saved.
+        """
+
+        super().__init__() 
         self.contator = 0
         self.maxim = 0
         self._running = True
@@ -18,46 +36,48 @@ class Conversions(QThread):  # Hereda de QThread
         real_folder = self.folder_text + "/"
         os.makedirs(real_folder, exist_ok=True)
 
-        # Crear lista de SMILES
+        # Create the smiles list
         list_smiles = []
 
-        # Guardar SMILES
+        # open the smiles file
         with open(self.file_path, 'r') as file:
             lines = file.readlines()
 
+        # Save the smiles on a list
         for line in lines:
-            list_smiles.append(line.strip())  # Asegúrate de eliminar saltos de línea
+            list_smiles.append(line.strip())
 
-        self.maxim = len(list_smiles)  # Establecer el máximo
+        self.maxim = len(list_smiles)
 
         for i, smile in enumerate(list_smiles):
             if not self._running:
                 break
             
             try:
+                # Run the command to convert each smiles to mol2
                 subprocess.run(
                     ["./lib/obabel", "-:" + smile, "-omol2", "-O", os.path.join(real_folder, f'ligand_{i}.mol2'), '--gen3d'],
                     check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
                 )
                 sdf = os.path.join(real_folder, f'ligand_{i}.mol2')
                 pdbqt = os.path.join(real_folder, f'ligand_{i}.pdbqt')
+
+                # Run the command to convert each smiles to pdbqt
                 subprocess.run(
                     ['./lib/obabel', '-imol2', sdf, '-opdbqt', '-O', pdbqt],
                     check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                 )
                 self.contator += 1
-                os.remove(sdf)  # Eliminar el archivo .mol2
+                os.remove(sdf)
 
-                # Emitir progreso
                 self.progress.emit(self.contator)
 
             except subprocess.CalledProcessError as e:
                 print(f"Error processing {smile}: {str(e)}")
 
-        self.finished.emit()  # Emitir señal al finalizar
+        self.finished.emit()
 
     def stop(self):
-        """Método para detener la ejecución del hilo."""
         self._running = False
 
     def Maximum(self, file):
