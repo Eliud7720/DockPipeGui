@@ -89,7 +89,7 @@ class Conversions(QThread):
 
             # Command to run
             command = [
-                './lib/smina',
+                'smina',
                 '-r', self.protein_file,
                 '-l', ligand,
                 '-o', self.des_folder + basename + "_docked.pdbqt",

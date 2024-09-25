@@ -140,7 +140,7 @@ class Conversions(QThread):
                             file.write("END")
 
                         # Convert the .pdb file to .pdbqt using OpenBabel
-                        result = subprocess.run(["./lib/obabel", "-i", "pdb", pdb_file, "-xr", "-opdbqt", '-O', pdbqt_file, "-p", "7.0", "--partialcharge", "gasteiger"], check=True, capture_output=True, text=True)
+                        result = subprocess.run(["obabel", "-i", "pdb", pdb_file, "-xr", "-opdbqt", '-O', pdbqt_file, "-p", "7.0", "--partialcharge", "gasteiger"], check=True, capture_output=True, text=True)
 
                         with open(pdbqt_file, 'r') as file:
                             lines = file.readlines()
@@ -168,7 +168,7 @@ class Conversions(QThread):
             final_name = self.des_folder + os.path.basename(os.path.splitext(pdb)[0]) + ".pdbqt"
 
             # Run the command to convert the protein with the selected chains to pdbqt
-            result = subprocess.run(["./lib/obabel", "-i", "pdb", temp_pdb, "-xr", "-opdbqt", "-O", final_name, "--partialcharge", "gasteiger"], capture_output=True, text=True)
+            result = subprocess.run(["obabel", "-i", "pdb", temp_pdb, "-xr", "-opdbqt", "-O", final_name, "--partialcharge", "gasteiger"], capture_output=True, text=True)
             
             os.remove(temp_pdb)
 

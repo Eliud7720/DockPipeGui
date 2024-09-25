@@ -58,12 +58,12 @@ class Conversions(QThread):
                 break
             try:
                 # Run the openbabel command and convert to mol2
-                subprocess.run(["./lib/obabel", "-:" + smile, "-omol2", "-O", os.path.join(real_folder, f'ligand_{i}.mol2'), '--gen3d'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                subprocess.run(["obabel", "-:" + smile, "-omol2", "-O", os.path.join(real_folder, f'ligand_{i}.mol2'), '--gen3d'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 sdf = os.path.join(real_folder, f'ligand_{i}.mol2')
                 pdbqt = os.path.join(real_folder, f'ligand_{i}.pdbqt')
 
                 # Run the openbabel command and convert to pdbqt
-                subprocess.run(['./lib/obabel', '-imol2', sdf, '-opdbqt', '-O', pdbqt], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                subprocess.run(['obabel', '-imol2', sdf, '-opdbqt', '-O', pdbqt], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 
                 self.contator += 1
                 os.remove(sdf)

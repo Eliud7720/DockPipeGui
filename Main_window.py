@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
         # ------------------------- MAIN WINDOW SETTINGS -------------------------"
 
         
-        self.setWindowTitle("DockPipeGui v. 0.1.19.") # Establish the Main Window title
+        self.setWindowTitle("DockPipeGUI v. 1.0") # Establish the Main Window title
         self.resize(1400, 800)  # Establish main window starting size
 
 
@@ -127,6 +127,9 @@ class MainWindow(QMainWindow):
         self.button4.setIcon(analysis_icon)
         self.button4.setIconSize(analysis.size())
         self.button4.setLayoutDirection(Qt.RightToLeft)
+
+        # Set window icon
+        self.setWindowIcon(QIcon("imgs/Docking.svg"))
 
         # ------------------------- CREATE THE MAIN STACKED WIDGET -------------------------"
         
@@ -202,26 +205,16 @@ class MainWindow(QMainWindow):
         self.dropdown_4.button4Clicked.connect(self.page_44_signal)
         self.dropdown_4.button5Clicked.connect(self.page_45_signal)
 
-
-
-
         # ------------------------- ESTABLISH THE MAIN WIDGET -------------------------"
-
-
 
         self.setCentralWidget(self.main_frame)
         
-
-
         # ------------------------- ESTABLISH THE CONNECTIONS -------------------------"
         
-
         self.button1.clicked.connect(self.show_dropdown_1)
         self.button2.clicked.connect(self.show_dropdown_2)
         self.button3.clicked.connect(self.show_dropdown_3)
         self.button4.clicked.connect(self.show_dropdown_4)
-
-
 
         # ------------------------- DROPSHOW FUNCTIONS -------------------------"
 
@@ -2344,6 +2337,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
+    window.setWindowIcon(QIcon("imgs/Docking.png"))  # Asegúrate de usar un PNG
     window.show()
     app.exec()
 

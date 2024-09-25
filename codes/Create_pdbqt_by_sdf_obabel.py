@@ -59,7 +59,7 @@ class Conversions(QThread):
             try:
                 # Run the conversion to mol2 to each molecule
                 subprocess.run(
-                    ["./lib/obabel", "-:" + smile, "-omol2", "-O", os.path.join(real_folder, f'ligand_{i}.mol2'), '--gen3d'],
+                    ["obabel", "-:" + smile, "-omol2", "-O", os.path.join(real_folder, f'ligand_{i}.mol2'), '--gen3d'],
                     check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
                 )
                 sdf = os.path.join(real_folder, f'ligand_{i}.mol2')
@@ -67,7 +67,7 @@ class Conversions(QThread):
 
                 # Run the conversion to pdbqt to each molecule
                 subprocess.run(
-                    ['./lib/obabel', '-imol2', sdf, '-opdbqt', '-O', pdbqt],
+                    ['obabel', '-imol2', sdf, '-opdbqt', '-O', pdbqt],
                     check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                 )
                 self.contator += 1

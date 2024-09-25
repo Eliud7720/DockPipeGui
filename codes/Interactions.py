@@ -55,7 +55,7 @@ class Conversions(QThread):
         ligands_files = sorted(ligands_files)
 
         # add H to the protein
-        result = subprocess.run(["./lib/obabel", self.protein_file, "-O", self.des_folder + os.path.basename(self.protein_file), "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        result = subprocess.run(["obabel", self.protein_file, "-O", self.des_folder + os.path.basename(self.protein_file), "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # Prepare the protein
         u = mda.Universe(self.des_folder + os.path.basename(self.protein_file), topology_format="PDB", format="PDB")
@@ -76,7 +76,7 @@ class Conversions(QThread):
             if len(lines) > 3 and len(lines[3].split()) > 2:
                 smiles = lines[3].split()[2]
             else:
-                subprocess.run(["./lib/obabel", ligand, "-O", self.des_folder + "temp.pdb"], stdout=subprocess.DEVNULL,  stderr=subprocess.DEVNULL)
+                subprocess.run(["obabel", ligand, "-O", self.des_folder + "temp.pdb"], stdout=subprocess.DEVNULL,  stderr=subprocess.DEVNULL)
                 pdb = Chem.MolFromPDBFile(self.des_folder + "temp.pdb")
                 smiles = Chem.MolToSmiles(pdb)
 

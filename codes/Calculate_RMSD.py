@@ -48,14 +48,14 @@ class Conversions(QThread):
 
         # Create the comand of the file 1 conversion to mol2 using openbabel
         command_1 = [
-        './lib/obabel', 
+        'obabel', 
         '-ipdbqt', self.file_1, 
         '-omol2', "-O", new_1
         ]
 
         # Create the comand of the file 2 conversion to mol2 using openbabel
         command_2 = [
-        './lib/obabel', 
+        'obabel', 
         '-ipdbqt', self.file_2, 
         '-omol2', "-O", new_2
         ]
